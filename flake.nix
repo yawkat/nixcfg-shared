@@ -50,17 +50,23 @@
             inherit system;
             config.allowUnfree = true;
           };
-          testHome = home-manager.lib.homeManagerConfiguration {
-            inherit pkgs;
-            modules = [
-              self.homeManagerModules.default
-              {
-                home.username = "test-user";
-                home.homeDirectory = "/home/test-user";
-                home.stateVersion = "26.05";
-              }
-            ];
-          };
+          mkTestHome =
+            extra:
+            home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              modules = [
+                self.homeManagerModules.default
+                {
+                  home.username = "test-user";
+                  home.homeDirectory = "/home/test-user";
+                  home.stateVersion = "26.05";
+                }
+                extra
+              ];
+            };
+          testHome = mkTestHome { };
+          # Both sides of host.work must keep evaluating.
+          testHomeWork = mkTestHome { host.work = true; };
           # Evaluate the system modules end to end so CI catches option
           # breakage. Dummy device/hostname only — no real host identity.
           testSystem =
@@ -87,6 +93,7 @@
         in
         {
           home-activation = testHome.activationPackage;
+          home-activation-work = testHomeWork.activationPackage;
 
           privacy =
             pkgs.runCommand "shared-config-privacy-check"

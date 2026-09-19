@@ -1,4 +1,9 @@
-{ pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   firefoxAddon =
     {
@@ -63,6 +68,12 @@ let
     hash = "sha256-RXPP2xAZNGfpnh3Vp5LyOuaXZFQMLgbQRE8SqBzcTwo=";
     license = pkgs.lib.licenses.gpl3Only;
   };
+
+  # Only wanted on personal machines; work profiles stay minimal.
+  personalAddons = [
+    sponsorBlock
+    redditEnhancementSuite
+  ];
 in
 {
   programs.firefox = {
@@ -75,9 +86,8 @@ in
       extensions.packages = [
         ublockOrigin
         tabReloader
-        sponsorBlock
-        redditEnhancementSuite
-      ];
+      ]
+      ++ lib.optionals (!config.host.work) personalAddons;
     };
   };
 
