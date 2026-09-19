@@ -45,6 +45,24 @@ let
     hash = "sha256-0DP1xSfQUNFCTeoogi0RsiPBuQO5x8ECCftevb9qWCk=";
     license = pkgs.lib.licenses.mpl20;
   };
+
+  sponsorBlock = firefoxAddon {
+    pname = "sponsorblock";
+    version = "6.1.7";
+    addonId = "sponsorBlocker@ajay.app";
+    url = "https://addons.mozilla.org/firefox/downloads/file/4897574/sponsorblock-6.1.7.xpi";
+    hash = "sha256-DVDhYyxvFe4VpUPmcOHFcpdGBaXAJiKRbgjgJoA9+D8=";
+    license = pkgs.lib.licenses.lgpl3Only;
+  };
+
+  redditEnhancementSuite = firefoxAddon {
+    pname = "reddit-enhancement-suite";
+    version = "5.24.10";
+    addonId = "jid1-xUfzOsOFlzSOXg@jetpack";
+    url = "https://addons.mozilla.org/firefox/downloads/file/4899821/reddit_enhancement_suite-5.24.10.xpi";
+    hash = "sha256-RXPP2xAZNGfpnh3Vp5LyOuaXZFQMLgbQRE8SqBzcTwo=";
+    license = pkgs.lib.licenses.gpl3Only;
+  };
 in
 {
   programs.firefox = {
@@ -57,6 +75,8 @@ in
       extensions.packages = [
         ublockOrigin
         tabReloader
+        sponsorBlock
+        redditEnhancementSuite
       ];
     };
   };
