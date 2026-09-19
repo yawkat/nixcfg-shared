@@ -14,7 +14,14 @@ let
 in
 {
   home.packages = lib.optionals (!config.host.work) (
-    [ paste-cli ]
+    [
+      paste-cli
+      pkgs.vlc
+      pkgs.mpv
+      pkgs.gimp
+      pkgs.ffmpeg
+      pkgs.thunderbird
+    ]
     # password-gui bundles an x86_64-only QtJambi native library.
     ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [ password-gui ]
   );
