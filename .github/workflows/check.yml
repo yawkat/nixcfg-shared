@@ -1,0 +1,22 @@
+name: Check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  flake:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - name: Evaluate all supported systems
+        run: nix flake check --all-systems --no-build
+      - name: Build x86_64 checks
+        run: >-
+          nix build
+          .#checks.x86_64-linux.home-activation
+          .#checks.x86_64-linux.privacy
