@@ -66,13 +66,32 @@ supplies it.
 
 - `nixosModules.default`: bootloader (systemd-boot), Nix flake settings and GC,
   locale, German (nodeadkeys) keyboard, zram swap, KDE Plasma 6 on Wayland
-  (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, and a btrfs
-  blank-root impermanence setup that resets `/` on every boot while persisting
-  `/nix`, `/home`, and `/persist`.
+  (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, a btrfs blank-root
+  impermanence setup that resets `/` on every boot while persisting `/nix`,
+  `/home`, and `/persist`, and the packaged desktop tools below.
 - `nixosModules.diskLuksBtrfs`: a [disko](https://github.com/nix-community/disko)
   layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
   holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`
   subvolumes.
+
+### Packaged desktop tools
+
+Built from source and exposed as `packages.<system>.{paste-cli,password-gui}`
+and via `overlays.default`. `nixosModules.default` installs both system-wide
+(so they are on the full NixOS hosts but not the system-manager machine, which
+only consumes `homeManagerModules.default`):
+
+- `paste-cli`: the [paste](https://github.com/yawkat/paste) CLI (`paste`), with
+  `wl-clipboard` and `libnotify` on its path. It ships a Spectacle *Export →
+  Open With* entry (`image/png;image/jpeg`) and a Dolphin *Share via paste*
+  service menu, so screenshots and files upload straight from Plasma.
+- `password-gui`: the QtJambi [password](https://github.com/yawkat/password-java)
+  manager GUI. The QtJambi version is pinned to whatever Qt 6 nixpkgs ships (via
+  `-Dqtjambi.version`), and the wrapper points it at the system Qt and defaults
+  to the Wayland platform.
+
+`kdePackages.spectacle` is in `homeManagerModules.default`, so it is available
+on every machine.
 
 Networking is intentionally left to the host: a wired machine wants static
 `systemd-networkd`, a laptop wants NetworkManager, so each host configures its

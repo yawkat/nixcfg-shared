@@ -43,6 +43,25 @@
         diskLuksBtrfs = ./nixos/disk.nix;
       };
 
+      overlays.default = final: _prev: {
+        paste-cli = final.callPackage ./nixos/pkgs/paste-cli.nix { };
+        password-gui = final.callPackage ./nixos/pkgs/password-gui.nix { };
+      };
+
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+            overlays = [ self.overlays.default ];
+          };
+        in
+        {
+          inherit (pkgs) paste-cli password-gui;
+        }
+      );
+
       checks = forAllSystems (
         system:
         let

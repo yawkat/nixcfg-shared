@@ -6,5 +6,6 @@
     ./users.nix
     ./impermanence.nix
     ./backup-drives.nix
+    ./gui-tools.nix
   ];
 }
