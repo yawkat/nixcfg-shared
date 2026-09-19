@@ -9,17 +9,40 @@ No license is granted for this repository.
 ## Flake output
 
 - `homeManagerModules.default`: shared packages plus Git, VS Code, IntelliJ
-  IDEA, JDKs, Zsh, Starship, Firefox, Ghostty, GTK, and KDE preferences.
+  IDEA, JDKs, Zsh, Starship, Firefox, Ghostty, GTK, KDE preferences, and the
+  personal GUI tools below.
 
 The package set includes unfree software, so consumers must enable
 `nixpkgs.config.allowUnfree`.
+
+Also exposed for building directly: `packages.<system>.{paste-cli,password-gui}`
+and `overlays.default`.
+
+### Packaged GUI tools
+
+Built from source and installed by `homeManagerModules.default` on personal
+machines (gated on `host.work`, see below):
+
+- `paste-cli`: the [paste](https://github.com/yawkat/paste) CLI (`paste-cli`),
+  with `wl-clipboard`, `libnotify`, and `xdg-utils` on its path. It ships a
+  Spectacle *Export → Open With* entry (`image/png;image/jpeg`) and a Dolphin
+  *Share via paste* service menu, so screenshots and files upload straight from
+  Plasma. Named `paste-cli` so it does not shadow coreutils' `paste`.
+- `password-gui`: the QtJambi [password](https://github.com/yawkat/password-java)
+  manager GUI (x86_64 only — QtJambi's native library is x86_64). The QtJambi
+  version is pinned to whatever Qt 6 nixpkgs ships (via `-Dqtjambi.version`), and
+  the wrapper points it at the system Qt and defaults to the Wayland platform.
+
+`kdePackages.spectacle` is in the shared packages unconditionally, so it is on
+every machine.
 
 ### Options
 
 - `host.work` — mark the machine as a work computer (default `false`).
   Configuration that is only wanted on personal machines is left out when this
-  is set; currently it drops the personal-only Firefox addons (SponsorBlock and
-  Reddit Enhancer). Set it in the consuming Home Manager configuration:
+  is set: the personal-only Firefox addons (SponsorBlock and Reddit Enhancement
+  Suite) and the packaged GUI tools above. Set it in the consuming Home Manager
+  configuration:
 
   ```nix
   host.work = true;

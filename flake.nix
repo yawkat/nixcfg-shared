@@ -43,6 +43,29 @@
         diskLuksBtrfs = ./nixos/disk.nix;
       };
 
+      overlays.default = final: _prev: {
+        paste-cli = final.callPackage ./pkgs/paste-cli.nix { };
+        password-gui = final.callPackage ./pkgs/password-gui.nix { };
+      };
+
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+            overlays = [ self.overlays.default ];
+          };
+        in
+        {
+          inherit (pkgs) paste-cli;
+        }
+        # password-gui bundles an x86_64-only QtJambi native library.
+        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
+          inherit (pkgs) password-gui;
+        }
+      );
+
       checks = forAllSystems (
         system:
         let

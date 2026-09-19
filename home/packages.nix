@@ -30,5 +30,6 @@
     wget
     vim
     psmisc
+    kdePackages.spectacle
   ];
 }
