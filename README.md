@@ -55,5 +55,69 @@ modules = [
 ```
 
 System services, desktop sessions, and portals remain part of the NixOS host
-configuration. Future system-wide settings can be published independently as
-`nixosModules` without changing the Home Manager interface.
+configuration.
+
+## NixOS system modules
+
+This repository also exports reusable, host-agnostic `nixosModules` for full
+NixOS machines. Host identity (hostname, disk device, networking, passwords,
+`stateVersion`) is **not** part of these modules; a consuming per-host flake
+supplies it.
+
+- `nixosModules.default`: bootloader (systemd-boot), Nix flake settings and GC,
+  locale, German (nodeadkeys) keyboard, zram swap, KDE Plasma 6 on Wayland
+  (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, and a btrfs
+  blank-root impermanence setup that resets `/` on every boot while persisting
+  `/nix`, `/home`, and `/persist`.
+- `nixosModules.diskLuksBtrfs`: a [disko](https://github.com/nix-community/disko)
+  layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
+  holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`
+  subvolumes.
+
+Networking is intentionally left to the host: a wired machine wants static
+`systemd-networkd`, a laptop wants NetworkManager, so each host configures its
+own (and persists any NetworkManager connections under `/persist` itself).
+
+### Options
+
+Set these in the consuming host module:
+
+- `host.disk.device` — whole-disk device the disko layout wipes and partitions
+  (e.g. `/dev/nvme0n1`).
+
+### Consuming flake
+
+The consumer imports the shared modules alongside its own `disko`,
+`impermanence`, and `home-manager` inputs (the shared flake does not force
+these on consumers):
+
+```nix
+nixpkgs.lib.nixosSystem {
+  system = "x86_64-linux";
+  modules = [
+    disko.nixosModules.disko
+    impermanence.nixosModules.impermanence
+    home-manager.nixosModules.home-manager
+    shared-config.nixosModules.default
+    shared-config.nixosModules.diskLuksBtrfs
+    ./hosts/<host>.nix
+  ];
+}
+```
+
+The per-host module sets `networking.hostName`, `host.disk.device`, networking,
+`time.timeZone`, `system.stateVersion`, the user password, and wires the shared
+Home Manager module for `yawkat`.
+
+The blank-root impermanence setup expects a read-only `@root-blank` btrfs
+snapshot to exist as a sibling of `@root`; create it once at install time, after
+disko has formatted the disk, from the btrfs top-level subvolume:
+
+```sh
+mount -o subvol=/ /dev/mapper/cryptroot /mnt/btrfs-top
+btrfs subvolume snapshot -r /mnt/btrfs-top/@root /mnt/btrfs-top/@root-blank
+umount /mnt/btrfs-top
+```
+
+Future system-wide settings can be published as additional `nixosModules`
+without changing the Home Manager interface.

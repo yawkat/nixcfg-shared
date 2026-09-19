@@ -7,6 +7,17 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Used only to evaluate the nixosModules in CI. Consumers supply their own
+    # disko and impermanence inputs.
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    impermanence = {
+      url = "github:nix-community/impermanence";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
   };
 
   outputs =
@@ -14,6 +25,8 @@
       self,
       nixpkgs,
       home-manager,
+      disko,
+      impermanence,
       ...
     }:
     let
@@ -24,6 +37,11 @@
     in
     {
       homeManagerModules.default = ./home;
+
+      nixosModules = {
+        default = ./nixos;
+        diskLuksBtrfs = ./nixos/disk.nix;
+      };
 
       checks = forAllSystems (
         system:
@@ -43,6 +61,24 @@
               }
             ];
           };
+          # Evaluate the system modules end to end so CI catches option
+          # breakage. Dummy device/hostname only — no real host identity.
+          testSystem =
+            (nixpkgs.lib.nixosSystem {
+              inherit system;
+              modules = [
+                disko.nixosModules.disko
+                impermanence.nixosModules.impermanence
+                self.nixosModules.default
+                self.nixosModules.diskLuksBtrfs
+                {
+                  host.disk.device = "/dev/vda";
+                  networking.hostName = "ci";
+                  boot.loader.grub.enable = false;
+                  system.stateVersion = "26.05";
+                }
+              ];
+            }).config.system.build.toplevel;
         in
         {
           home-activation = testHome.activationPackage;
@@ -72,6 +108,9 @@
 
                 touch "$out"
               '';
+        }
+        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
+          nixos-eval = testSystem;
         }
       );
 
