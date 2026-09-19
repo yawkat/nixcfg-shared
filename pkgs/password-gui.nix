@@ -73,6 +73,7 @@ maven.buildMavenPackage {
     description = "Qt desktop GUI for the yawkat password manager";
     homepage = "https://github.com/yawkat/password-java";
     mainProgram = "password-gui";
-    platforms = lib.platforms.linux;
+    # The upstream pom only depends on qtjambi-native-linux-x64.
+    platforms = [ "x86_64-linux" ];
   };
 }

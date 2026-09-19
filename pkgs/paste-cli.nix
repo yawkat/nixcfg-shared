@@ -7,6 +7,7 @@
   jdk21,
   wl-clipboard,
   libnotify,
+  xdg-utils,
 }:
 let
   # Appears in Spectacle's Export -> "Open With" (and any image "Open With"),
@@ -17,7 +18,7 @@ let
     Name=Paste
     Comment=Upload to the paste server
     Icon=document-share
-    Exec=paste file %f
+    Exec=paste-cli file %f
     MimeType=image/png;image/jpeg;
     Terminal=false
     NoDisplay=true
@@ -35,7 +36,7 @@ let
     [Desktop Action pasteUpload]
     Name=Share via paste
     Icon=document-share
-    Exec=paste file %f
+    Exec=paste-cli file %f
   '';
 in
 maven.buildMavenPackage {
@@ -61,12 +62,14 @@ maven.buildMavenPackage {
 
     install -Dm644 cli/target/cli-1.0-SNAPSHOT-shaded.jar "$out/share/paste/paste.jar"
 
-    makeWrapper ${jdk21}/bin/java "$out/bin/paste" \
+    # Installed as paste-cli, not paste, to avoid shadowing coreutils' paste.
+    makeWrapper ${jdk21}/bin/java "$out/bin/paste-cli" \
       --add-flags "-Djava.awt.headless=true -jar $out/share/paste/paste.jar" \
       --prefix PATH : ${
         lib.makeBinPath [
           wl-clipboard
           libnotify
+          xdg-utils
         ]
       }
 
@@ -79,7 +82,7 @@ maven.buildMavenPackage {
   meta = {
     description = "CLI that uploads stdin, files and screenshots to a paste server";
     homepage = "https://github.com/yawkat/paste";
-    mainProgram = "paste";
+    mainProgram = "paste-cli";
     platforms = lib.platforms.linux;
   };
 }
