@@ -14,6 +14,18 @@ No license is granted for this repository.
 The package set includes unfree software, so consumers must enable
 `nixpkgs.config.allowUnfree`.
 
+### Options
+
+- `host.work` — mark the machine as a work computer (default `false`).
+  Configuration that is only wanted on personal machines is left out when this
+  is set; currently it drops the personal-only Firefox addons (SponsorBlock and
+  Reddit Enhancement Suite). Set it in the consuming Home Manager
+  configuration:
+
+  ```nix
+  host.work = true;
+  ```
+
 ## Standalone Home Manager
 
 Add this repository as an input, make its Nixpkgs and Home Manager inputs
