@@ -60,19 +60,25 @@ let
     license = pkgs.lib.licenses.lgpl3Only;
   };
 
-  redditEnhancementSuite = firefoxAddon {
-    pname = "reddit-enhancement-suite";
-    version = "5.24.10";
-    addonId = "jid1-xUfzOsOFlzSOXg@jetpack";
-    url = "https://addons.mozilla.org/firefox/downloads/file/4899821/reddit_enhancement_suite-5.24.10.xpi";
-    hash = "sha256-RXPP2xAZNGfpnh3Vp5LyOuaXZFQMLgbQRE8SqBzcTwo=";
-    license = pkgs.lib.licenses.gpl3Only;
+  redditEnhancer = firefoxAddon {
+    pname = "reddit-enhancer";
+    version = "3.5.1";
+    addonId = "{46abbc04-ce38-475f-9ef8-e0a4a59d0c9f}";
+    url = "https://addons.mozilla.org/firefox/downloads/file/4957758/reddit_enhancer-3.5.1.xpi";
+    hash = "sha256-YcmSYqBSwoDG6I82B+4x8mlqrPXDgZzfT9ipJNVP2EE=";
+    # AMO lists a custom license with no text, and the upstream repository
+    # ships none, so no rights are granted. Treat it as unfree.
+    license = {
+      fullName = "Reddit Enhancer custom license";
+      url = "https://addons.mozilla.org/en-US/firefox/addon/reddit-enhancer/license/";
+      free = false;
+    };
   };
 
   # Only wanted on personal machines; work profiles stay minimal.
   personalAddons = [
     sponsorBlock
-    redditEnhancementSuite
+    redditEnhancer
   ];
 in
 {

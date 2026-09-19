@@ -19,8 +19,7 @@ The package set includes unfree software, so consumers must enable
 - `host.work` — mark the machine as a work computer (default `false`).
   Configuration that is only wanted on personal machines is left out when this
   is set; currently it drops the personal-only Firefox addons (SponsorBlock and
-  Reddit Enhancement Suite). Set it in the consuming Home Manager
-  configuration:
+  Reddit Enhancer). Set it in the consuming Home Manager configuration:
 
   ```nix
   host.work = true;
