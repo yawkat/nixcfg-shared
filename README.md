@@ -8,8 +8,8 @@ No license is granted for this repository.
 
 ## Flake output
 
-- `homeManagerModules.default`: shared packages plus Zsh, Starship, Firefox,
-  Ghostty, GTK, and KDE preferences.
+- `homeManagerModules.default`: shared packages plus Git, VS Code, Zsh,
+  Starship, Firefox, Ghostty, GTK, and KDE preferences.
 
 The package set includes unfree software, so consumers must enable
 `nixpkgs.config.allowUnfree`.
