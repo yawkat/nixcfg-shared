@@ -5,5 +5,6 @@
     ./desktop.nix
     ./users.nix
     ./impermanence.nix
+    ./backup-drives.nix
   ];
 }

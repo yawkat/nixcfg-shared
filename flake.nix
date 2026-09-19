@@ -73,6 +73,11 @@
                 self.nixosModules.diskLuksBtrfs
                 {
                   host.disk.device = "/dev/vda";
+                  host.backupDrives.sample = {
+                    address = "10.0.0.1";
+                    subsystemNqn = "nqn.2026-09.example:sample";
+                    hostNqn = "nqn.2026-09.example:ci";
+                  };
                   networking.hostName = "ci";
                   boot.loader.grub.enable = false;
                   system.stateVersion = "26.05";
