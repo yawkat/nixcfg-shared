@@ -39,9 +39,9 @@ maven.buildMavenPackage {
   src = fetchFromGitHub {
     owner = "yawkat";
     repo = "password-java";
-    # PR #1 (gui) head.
-    rev = "cc7db84b682bef0c840506d095714710fd6259ae";
-    hash = "sha256-g/UFDwKTdY44zNc7JXtdHS34mh7SdoivDwOCs3KKWaI=";
+    # PR #1 (gui) head, launcher/desktop dropped.
+    rev = "e134179aa81a71a34320a613af08d7b0c74d8d59";
+    hash = "sha256-Ms+mMkmlizUAQtyzx1SHgdTLupcrrJtBlPcXq8Ae+6s=";
   };
 
   # Build the GUI and its dependencies. Use -DskipTests rather than

@@ -45,9 +45,9 @@ maven.buildMavenPackage {
   src = fetchFromGitHub {
     owner = "yawkat";
     repo = "paste";
-    # PR #2 (cli-stdin-spectacle) head.
-    rev = "bc4ab04c09ab153479bb109c8741c53e4b40fb57";
-    hash = "sha256-E078Tm7xRKfgzvy8NyETvb8O4CUW5qeG6ZWiVmNLrnM=";
+    # PR #2 (cli-stdin-spectacle) head, launcher/desktop dropped.
+    rev = "29bfe554ef6ce6483fcbbea8ec34c36d729b3d82";
+    hash = "sha256-bYWEi3gnuk9R4kaJUrfyXfN59u5HOAF1osx38GmaVvg=";
   };
 
   # Build only the CLI and its dependencies (shared, client); skip the server.
