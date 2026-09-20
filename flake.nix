@@ -7,6 +7,11 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    plasma-manager = {
+      url = "github:nix-community/plasma-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
     # Used only to evaluate the nixosModules in CI. Consumers supply their own
     # disko and impermanence inputs.
     disko = {
@@ -25,6 +30,7 @@
       self,
       nixpkgs,
       home-manager,
+      plasma-manager,
       disko,
       impermanence,
       ...
@@ -36,7 +42,12 @@
       ];
     in
     {
-      homeManagerModules.default = ./home;
+      homeManagerModules.default = {
+        imports = [
+          plasma-manager.homeModules.plasma-manager
+          ./home
+        ];
+      };
 
       nixosModules = {
         default = ./nixos;
@@ -90,6 +101,15 @@
           testHome = mkTestHome { };
           # Both sides of host.work must keep evaluating.
           testHomeWork = mkTestHome { host.work = true; };
+          # Likewise for host.idle: the default is "never dim, never lock", so
+          # the timeout branch needs a check of its own.
+          testHomeIdle = mkTestHome {
+            host.idle = {
+              dimAfter = 300;
+              screenOffAfter = 600;
+              lockAfter = 900;
+            };
+          };
           # Evaluate the system modules end to end so CI catches option
           # breakage. Dummy device/hostname only — no real host identity.
           testSystem =
@@ -117,6 +137,7 @@
         {
           home-activation = testHome.activationPackage;
           home-activation-work = testHomeWork.activationPackage;
+          home-activation-idle = testHomeIdle.activationPackage;
 
           privacy =
             pkgs.runCommand "shared-config-privacy-check"

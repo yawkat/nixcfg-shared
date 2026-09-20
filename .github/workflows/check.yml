@@ -20,4 +20,5 @@ jobs:
           nix build
           .#checks.x86_64-linux.home-activation
           .#checks.x86_64-linux.home-activation-work
+          .#checks.x86_64-linux.home-activation-idle
           .#checks.x86_64-linux.privacy
