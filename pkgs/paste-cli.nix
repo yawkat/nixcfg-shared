@@ -15,7 +15,7 @@ let
   spectacleDesktop = writeText "at.yawk.paste.desktop" ''
     [Desktop Entry]
     Type=Application
-    Name=Paste
+    Name=s.yawk.at
     Comment=Upload to the paste server
     Icon=document-share
     Exec=paste-cli file %f
