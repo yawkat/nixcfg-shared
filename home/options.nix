@@ -46,5 +46,19 @@
         '';
       };
     };
+
+    panels = {
+      screens = lib.mkOption {
+        type = lib.types.listOf lib.types.ints.unsigned;
+        default = [ 0 ];
+        example = [ 0 1 ];
+        description = ''
+          Which screens get a bottom taskbar panel, identified by the same
+          0-indexed screen number KDE itself uses. A single-monitor laptop
+          just wants the default `[ 0 ]`; a desktop with independent monitors
+          that each need their own taskbar lists every screen index here.
+        '';
+      };
+    };
   };
 }
