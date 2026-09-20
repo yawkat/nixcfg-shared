@@ -144,6 +144,9 @@ Set these in the consuming host module:
 
 - `host.disk.device` — whole-disk device the disko layout wipes and partitions
   (e.g. `/dev/nvme0n1`).
+- `host.flakeDir` — absolute path to this host's flake checkout (e.g.
+  `/home/user/nixcfg`). Symlinked to `/etc/nixos`, so plain
+  `nixos-rebuild switch` (no `--flake` needed) finds it.
 
 ### Consuming flake
 

@@ -1,7 +1,20 @@
-{ lib, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 {
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # So `sudo nixos-rebuild switch` finds the flake without `--flake`:
+  # nixos-rebuild looks for /etc/nixos/flake.nix by default. Only touches the
+  # link when nothing unexpected already lives at /etc/nixos.
+  system.activationScripts.etcNixosFlakeLink = lib.stringAfter [ "etc" ] ''
+    target=${lib.escapeShellArg config.host.flakeDir}
+    link=/etc/nixos
+    if [ -e "$link" ] && [ ! -L "$link" ]; then
+      echo "warning: $link exists and is not a symlink; leaving it alone (host.flakeDir wants it to point at $target)" >&2
+    else
+      ln -sfn "$target" "$link"
+    fi
+  '';
 
   # systemd in initrd gives a clean LUKS passphrase prompt and lets the
   # blank-root rollback run as an ordered service before the root mount.
