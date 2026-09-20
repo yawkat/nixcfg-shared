@@ -32,5 +32,8 @@
     vim
     psmisc
     kdePackages.spectacle
+    kdePackages.kcalc
+    okteta
+    meld
   ];
 }
