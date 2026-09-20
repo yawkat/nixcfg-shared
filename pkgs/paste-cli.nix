@@ -15,7 +15,7 @@ let
   spectacleDesktop = writeText "at.yawk.paste.desktop" ''
     [Desktop Entry]
     Type=Application
-    Name=Paste
+    Name=s.yawk.at
     Comment=Upload to the paste server
     Icon=document-share
     Exec=paste-cli file %f
@@ -24,7 +24,7 @@ let
     NoDisplay=true
   '';
 
-  # Dolphin right-click "Share via paste" for any file.
+  # Dolphin right-click "Share via s.yawk.at" for any file.
   serviceMenu = writeText "at.yawk.paste-servicemenu.desktop" ''
     [Desktop Entry]
     Type=Service
@@ -34,7 +34,7 @@ let
     Actions=pasteUpload;
 
     [Desktop Action pasteUpload]
-    Name=Share via paste
+    Name=Share via s.yawk.at
     Icon=document-share
     Exec=paste-cli file %f
   '';
