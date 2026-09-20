@@ -44,5 +44,16 @@
         "${config.home.homeDirectory}/Downloads/"
       ];
     };
+
+    # Turn the Overview effect off. Plasma 6 ships it enabled and bound to the
+    # top-left hot corner, so it takes over the screen whenever the pointer
+    # merely passes through that corner on its way somewhere else. Disabling
+    # the plugin removes the effect itself (and with it Meta+W); the screen
+    # edge is pinned to KWin's ElectricNone (9) as well, so the corner stays
+    # inert even if something re-enables the plugin behind our back.
+    kwinrc = {
+      Plugins.overviewEnabled = false;
+      "Effect-overview".BorderActivate = 9;
+    };
   };
 }
