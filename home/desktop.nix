@@ -1,5 +1,7 @@
 { config, lib, ... }:
 {
+  programs.plasma.session.sessionRestore.restoreOpenApplicationsOnLogin = "startWithEmptySession";
+
   gtk = {
     enable = true;
     colorScheme = "dark";
