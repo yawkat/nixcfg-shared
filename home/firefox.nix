@@ -97,13 +97,11 @@ in
     };
   };
 
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications = {
-      "text/html" = [ "firefox.desktop" ];
-      "application/xhtml+xml" = [ "firefox.desktop" ];
-      "x-scheme-handler/http" = [ "firefox.desktop" ];
-      "x-scheme-handler/https" = [ "firefox.desktop" ];
-    };
-  };
+  # ~/.config/mimeapps.list is deliberately NOT managed here. Home Manager
+  # owns the whole file, but it is shared mutable state on a Plasma desktop:
+  # the Default Applications KCM writes to it, and applications register their
+  # own scheme handlers in it at runtime. Either the write replaces the Home
+  # Manager symlink — breaking the next activation with "would be clobbered" —
+  # or a forced overwrite silently drops those runtime associations. Set the
+  # default browser once in System Settings instead; Plasma persists it there.
 }
