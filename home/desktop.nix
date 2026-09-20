@@ -1,4 +1,4 @@
-{ ... }:
+{ config, lib, ... }:
 {
   gtk = {
     enable = true;
@@ -24,5 +24,25 @@
     };
 
     plasmarc.Theme.name = "breeze-dark";
+
+    baloofilerc.General = {
+      # Index file names only, never file contents. Content indexing runs
+      # baloo_file_extractor, which on a dev machine walks build trees and
+      # archives: here it grew to ~10G resident+swap, filled the 16G zram
+      # (the only swap we have), and pushed plasmashell and kwin out to
+      # swap. Faulting them back in is what stalls the cursor. KRunner and
+      # Dolphin still find files by name, which is what we actually use.
+      "only basic indexing" = true;
+
+      # Baloo writes this key as "exclude folders[$e]" so it can expand
+      # $HOME, but qt.kde.settings goes through kwriteconfig6, which escapes
+      # the brackets to \x5b/\x5d and leaves baloo ignoring the entry
+      # entirely. A plain key does get read, so the paths have to be
+      # absolute here -- "$HOME/..." would be taken literally.
+      "exclude folders" = lib.concatStringsSep "," [
+        "${config.home.homeDirectory}/dev/"
+        "${config.home.homeDirectory}/Downloads/"
+      ];
+    };
   };
 }
