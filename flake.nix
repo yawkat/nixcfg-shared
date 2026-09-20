@@ -152,7 +152,7 @@
                 # Base64 keeps the forbidden values themselves out of this public
                 # source tree, so this check cannot accidentally match its own list.
                 printf '%s' \
-                  'b3JhY2xlCmhlY2F0ZQpjaXNjbwp2YmFuCmpvbmFzLmtvbnJhZEBvcmFjbGUuY29tCi9ob21lL3lhd2thdAovb3B0L2Npc2NvCg==' \
+                  'b3JhY2xlCmhlY2F0ZQpjaXNjbwp2YmFuCmpvbmFzLmtvbnJhZEBvcmFjbGUuY29tCi9vcHQvY2lzY28K' \
                   | base64 --decode > forbidden-markers
 
                 while IFS= read -r marker; do

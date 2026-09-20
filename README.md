@@ -128,7 +128,9 @@ supplies it.
   persisting `/nix`, `/home`, and `/persist`. Hosts consuming this module are
   assumed to always be personal machines (the work PC uses `system-manager`
   instead), so KDE Connect is unconditional here — unlike the Firefox addon
-  above, there is no NixOS-level `host.work` gate.
+  above, there is no NixOS-level `host.work` gate. It also keeps `/etc/nixos`
+  symlinked to `/home/yawkat/nixcfg` (hardcoded, like the `yawkat` user
+  above), so plain `nixos-rebuild switch` finds the flake without `--flake`.
 - `nixosModules.diskLuksBtrfs`: a [disko](https://github.com/nix-community/disko)
   layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
   holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`
