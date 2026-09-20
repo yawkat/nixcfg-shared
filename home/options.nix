@@ -12,7 +12,9 @@
 
     idle = {
       dimAfter = lib.mkOption {
-        type = lib.types.nullOr lib.types.ints.positive;
+        # Upper and lower bound come from plasma-manager's dimDisplay option;
+        # repeating them here turns a downstream type error into a clear one.
+        type = lib.types.nullOr (lib.types.ints.between 20 600000);
         default = null;
         example = 300;
         description = ''
@@ -21,7 +23,8 @@
       };
 
       screenOffAfter = lib.mkOption {
-        type = lib.types.nullOr lib.types.ints.positive;
+        # Likewise from plasma-manager's turnOffDisplay option.
+        type = lib.types.nullOr (lib.types.ints.between 30 600000);
         default = null;
         example = 600;
         description = ''
@@ -31,7 +34,7 @@
       };
 
       lockAfter = lib.mkOption {
-        type = lib.types.nullOr lib.types.ints.positive;
+        type = lib.types.nullOr (lib.types.ints.between 60 600000);
         default = null;
         example = 900;
         description = ''

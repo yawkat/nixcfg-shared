@@ -32,6 +32,14 @@ in
     }
   ];
 
+  # This module used to set powerdevilrc's TurnOffDisplayWhenIdle. Removing the
+  # declaration leaves the old key sitting in the file on machines that already
+  # ran it, so delete it explicitly: qt.kde.settings maps null to
+  # `kwriteconfig6 --delete`, and its activation entry runs after
+  # plasma-manager's. Current Plasma reads TurnOffDisplayIdleTimeoutSec, which
+  # turnOffDisplay.idleTimeout below owns.
+  qt.kde.settings.powerdevilrc.AC.Display.TurnOffDisplayWhenIdle = null;
+
   programs.plasma = {
     enable = true;
 

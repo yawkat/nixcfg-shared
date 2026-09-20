@@ -48,6 +48,28 @@ every machine.
   host.work = true;
   ```
 
+- `host.idle` — the per-machine idle timeouts, all in seconds and all `null`
+  by default, which means "never". Standby itself is not configurable: it is
+  off everywhere, and the power button always shuts down.
+
+  | Option | Default | Effect |
+  | --- | --- | --- |
+  | `host.idle.dimAfter` | `null` | Seconds before the screen dims (20–600000). |
+  | `host.idle.screenOffAfter` | `null` | Seconds before the screen turns off (30–600000). |
+  | `host.idle.lockAfter` | `null` | Seconds before the session locks (60–600000). |
+
+  Leaving `lockAfter` at `null` sets `Autolock=false`, so a machine that should
+  never lock needs no configuration at all. kscreenlocker stores its timeout as
+  whole minutes, so `lockAfter` has to be a multiple of 60.
+
+  ```nix
+  host.idle = {
+    dimAfter = 300;
+    screenOffAfter = null;
+    lockAfter = 900;
+  };
+  ```
+
 ## Standalone Home Manager
 
 Add this repository as an input, make its Nixpkgs and Home Manager inputs
