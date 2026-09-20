@@ -15,6 +15,5 @@
     };
 
     plasmarc.Theme.name = "breeze-dark";
-    powerdevilrc.AC.Display.TurnOffDisplayWhenIdle = false;
   };
 }

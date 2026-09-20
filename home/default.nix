@@ -8,6 +8,7 @@
     ./intellij.nix
     ./options.nix
     ./packages.nix
+    ./power.nix
     ./vscode.nix
     ./zsh.nix
   ];
