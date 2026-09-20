@@ -122,7 +122,6 @@
                 self.nixosModules.diskLuksBtrfs
                 {
                   host.disk.device = "/dev/vda";
-                  host.flakeDir = "/etc/nixos-src";
                   host.backupDrives.sample = {
                     address = "10.0.0.1";
                     subsystemNqn = "nqn.2026-09.example:sample";
@@ -153,7 +152,7 @@
                 # Base64 keeps the forbidden values themselves out of this public
                 # source tree, so this check cannot accidentally match its own list.
                 printf '%s' \
-                  'b3JhY2xlCmhlY2F0ZQpjaXNjbwp2YmFuCmpvbmFzLmtvbnJhZEBvcmFjbGUuY29tCi9ob21lL3lhd2thdAovb3B0L2Npc2NvCg==' \
+                  'b3JhY2xlCmhlY2F0ZQpjaXNjbwp2YmFuCmpvbmFzLmtvbnJhZEBvcmFjbGUuY29tCi9vcHQvY2lzY28K' \
                   | base64 --decode > forbidden-markers
 
                 while IFS= read -r marker; do

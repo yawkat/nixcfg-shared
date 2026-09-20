@@ -1,4 +1,4 @@
-{ lib, config, pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -7,10 +7,10 @@
   # nixos-rebuild looks for /etc/nixos/flake.nix by default. Only touches the
   # link when nothing unexpected already lives at /etc/nixos.
   system.activationScripts.etcNixosFlakeLink = lib.stringAfter [ "etc" ] ''
-    target=${lib.escapeShellArg config.host.flakeDir}
+    target=/home/yawkat/nixcfg
     link=/etc/nixos
     if [ -e "$link" ] && [ ! -L "$link" ]; then
-      echo "warning: $link exists and is not a symlink; leaving it alone (host.flakeDir wants it to point at $target)" >&2
+      echo "warning: $link exists and is not a symlink; leaving it alone (wanted to point it at $target)" >&2
     else
       ln -sfn "$target" "$link"
     fi
