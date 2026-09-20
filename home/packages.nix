@@ -23,6 +23,7 @@
     github-cli
     xdg-utils
     mtr
+    sshfs
     python3
     zip
     unzip
