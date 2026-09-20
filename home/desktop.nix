@@ -21,6 +21,19 @@
       KDE.LookAndFeelPackage = "org.kde.breezedark.desktop";
       General.ColorScheme = "BreezeDark";
       Icons.Theme = "breeze-dark";
+
+      # SDDM autologin (nixos/desktop.nix) skips the greeter on the DM
+      # service's first start, but a killed/crashed display-manager service
+      # takes the active session down with it (they share a systemd cgroup)
+      # and then re-autologins unconditionally on restart. "Switch User" on
+      # the lock screen is the one path to an unauthenticated SDDM greeter
+      # process while a session is locked, so it's the one crash-to-restart
+      # surface reachable without already being logged in. Disabling it here
+      # removes that surface rather than just hiding the button.
+      "KDE Action Restrictions" = {
+        "action/switch_user" = false;
+        "action/start_new_session" = false;
+      };
     };
 
     plasmarc.Theme.name = "breeze-dark";
