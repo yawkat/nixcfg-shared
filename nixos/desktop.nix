@@ -5,6 +5,10 @@
     variant = "nodeadkeys";
   };
 
+  # NixOS hosts here are always personal machines; the work PC uses
+  # system-manager instead.
+  programs.kdeconnect.enable = true;
+
   services.desktopManager.plasma6.enable = true;
   services.displayManager.sddm = {
     enable = true;
