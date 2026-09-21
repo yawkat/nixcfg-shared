@@ -52,11 +52,16 @@
       nixosModules = {
         default = ./nixos;
         diskLuksBtrfs = ./nixos/disk.nix;
+        # Standalone and not part of `default`, so servers and VMs can use them
+        # without the desktop. `backup` imports `localPki`.
+        localPki = ./nixos/local-pki.nix;
+        backup = ./nixos/backup.nix;
       };
 
       overlays.default = final: _prev: {
         paste-cli = final.callPackage ./pkgs/paste-cli.nix { };
         password-gui = final.callPackage ./pkgs/password-gui.nix { };
+        cert-request = final.callPackage ./pkgs/device-ca-client.nix { };
       };
 
       packages = forAllSystems (
@@ -69,7 +74,7 @@
           };
         in
         {
-          inherit (pkgs) paste-cli;
+          inherit (pkgs) paste-cli cert-request;
         }
         # password-gui bundles an x86_64-only QtJambi native library.
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
@@ -133,6 +138,37 @@
                 }
               ];
             }).config.system.build.toplevel;
+          # The PKI and backup modules on their own, as a server would use
+          # them: no impermanence, no desktop.
+          testServer =
+            (nixpkgs.lib.nixosSystem {
+              inherit system;
+              modules = [
+                self.nixosModules.backup
+                {
+                  services.localPki.certs = [
+                    {
+                      cn = "ci.local.yawk.at";
+                      group = "nginx";
+                    }
+                  ];
+                  services.backup = [
+                    {
+                      secretPath = "/run/secrets/backup-password";
+                      directories = [ "/var/lib" ];
+                      excludes = [ "*.log" ];
+                    }
+                  ];
+                  networking.hostName = "ci";
+                  fileSystems."/" = {
+                    device = "/dev/vda";
+                    fsType = "ext4";
+                  };
+                  boot.loader.grub.enable = false;
+                  system.stateVersion = "26.05";
+                }
+              ];
+            }).config.system.build.toplevel;
         in
         {
           home-activation = testHome.activationPackage;
@@ -167,6 +203,7 @@
         }
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
           nixos-eval = testSystem;
+          nixos-eval-server = testServer;
         }
       );
 
