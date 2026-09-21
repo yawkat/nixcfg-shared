@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 let
   # Everything else in the tray beyond the always-visible clock/kickoff/tasks
   # row, carried over unchanged from the panel Plasma had set up by hand
@@ -24,6 +24,7 @@ let
   mkPanel = screen: {
     inherit screen;
     location = "bottom";
+    opacity = if config.host.panels.color == null then "adaptive" else "opaque";
     widgets = [
       "org.kde.plasma.kickoff"
       "org.kde.plasma.pager"
@@ -41,7 +42,12 @@ let
         };
       }
       "org.kde.plasma.marginsseparator"
-      { systemTray.items.extra = systemTrayExtraItems; }
+      {
+        systemTray.items = {
+          extra = systemTrayExtraItems;
+          shown = lib.optional config.host.panels.inputIndicator.enable "shared-input-indicator";
+        };
+      }
       "org.kde.plasma.digitalclock"
       "org.kde.plasma.showdesktop"
     ];

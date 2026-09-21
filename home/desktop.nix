@@ -38,7 +38,7 @@
       };
     };
 
-    plasmarc.Theme.name = "breeze-dark";
+    plasmarc.Theme.name = lib.mkDefault "breeze-dark";
 
     baloofilerc.General = {
       # Index file names only, never file contents. Content indexing runs

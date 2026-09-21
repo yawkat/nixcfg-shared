@@ -71,6 +71,45 @@ every machine.
   };
   ```
 
+### Panel identity and input switch
+
+Panels have a fixed, opaque tint: muted brown on personal machines and muted
+blue when `host.work = true`. Set `host.panels.color = "#29495e";` to choose a
+specific host's color; use different values for additional computers. Set it to
+`null` to keep the stock Breeze Dark panel. Only the panel SVG backgrounds are
+recolored; application colors, panel contents and screen placement stay as
+configured. The theme is regenerated from the installed Breeze assets on updates.
+
+An always-visible keyboard icon shows whether the devices attached through the
+USB switch are present: a green check when connected, a gray cross when
+disconnected. Hovering identifies the computer and connection state. It stays
+visible in both states, makes no sound and never requests attention. The service
+runs in the graphical user session and monitors USB presence without opening
+keyboard or mouse input devices. It also re-registers after Plasma restarts.
+
+`host.panels.inputIndicator.enable` defaults to `true`. The default device list
+matches the Razer DeathAdder V2 (`1532:0084`) and Das Keyboard (`24f0:0140`).
+Override `host.panels.inputIndicator.devices` for another switch setup:
+
+```nix
+host.panels.inputIndicator.devices = [
+  { name = "Mouse"; vendorId = "1532"; productId = "0084"; }
+  { name = "Keyboard"; vendorId = "24f0"; productId = "0140"; }
+];
+```
+
+All configured devices must be present for the connected state. The switch must
+actually disconnect them from the inactive computer; switches that emulate
+permanently connected input devices cannot be detected this way. The icon updates
+directly on USB connection and disconnection events.
+
+The changes take effect after applying Home Manager and starting the next Plasma
+session. Check device matching without starting the tray application with:
+
+```sh
+input-indicator --config ~/.config/input-indicator/devices.json --check
+```
+
 ## Standalone Home Manager
 
 Add this repository as an input, make its Nixpkgs and Home Manager inputs

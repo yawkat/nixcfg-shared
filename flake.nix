@@ -61,6 +61,7 @@
       overlays.default = final: _prev: {
         paste-cli = final.callPackage ./pkgs/paste-cli.nix { };
         password-gui = final.callPackage ./pkgs/password-gui.nix { };
+        input-indicator = final.callPackage ./pkgs/input-indicator.nix { };
         cert-request = final.callPackage ./pkgs/device-ca-client.nix { };
       };
 
@@ -74,7 +75,7 @@
           };
         in
         {
-          inherit (pkgs) paste-cli cert-request;
+          inherit (pkgs) paste-cli cert-request input-indicator;
         }
         # password-gui bundles an x86_64-only QtJambi native library.
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
@@ -173,6 +174,7 @@
           home-activation = testHome.activationPackage;
           home-activation-work = testHomeWork.activationPackage;
           home-activation-idle = testHomeIdle.activationPackage;
+          input-indicator = pkgs.callPackage ./pkgs/input-indicator.nix { };
 
           privacy =
             pkgs.runCommand "shared-config-privacy-check"
