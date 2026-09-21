@@ -70,5 +70,14 @@
       Plugins.overviewEnabled = false;
       "Effect-overview".BorderActivate = 9;
     };
+
+    # Silence the "device plugged in"/"device unplugged" notifications
+    # entirely. Both events live in plasma_workspace.notifyrc with
+    # Action=Popup|Sound by default; clearing Action drops the popup and the
+    # sound.
+    "plasma_workspace.notifyrc" = {
+      "Event/deviceAdded".Action = "";
+      "Event/deviceRemoved".Action = "";
+    };
   };
 }
