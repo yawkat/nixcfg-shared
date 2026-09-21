@@ -135,6 +135,16 @@ supplies it.
   layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
   holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`
   subvolumes.
+- `nixosModules.localPki`: client for the yawk.at local PKI
+  ([device-ca](https://github.com/yawkat/device-ca)). Adds the internal CA to
+  the system trust store and enrolls/renews the certificates listed in
+  `services.localPki.certs`. Standalone: it does not need the desktop or
+  impermanence, so servers and VMs can import it on its own.
+- `nixosModules.backup`: nightly restic backup (weekly `restic check`) to the
+  REST host at `backup.local.yawk.at`, into both its `local` and `b2`
+  repositories. Authenticates with the local-PKI client certificate
+  `backup@<hostName>.local.yawk.at`, which it enrolls itself (it imports
+  `localPki`). Also standalone.
 
 Networking is intentionally left to the host: a wired machine wants static
 `systemd-networkd`, a laptop wants NetworkManager, so each host configures its
@@ -146,6 +156,24 @@ Set these in the consuming host module:
 
 - `host.disk.device` — whole-disk device the disko layout wipes and partitions
   (e.g. `/dev/nvme0n1`).
+
+Backup and PKI (with `localPki`/`backup` imported):
+
+- `services.localPki.enable` — required when importing `localPki` on its
+  own; `backup` turns it on itself.
+- `services.localPki.directory` — where CA and certificate state lives
+  (default `/data/local-pki`). Must survive reboots: on an impermanent root,
+  point it at `/persist`.
+- `services.localPki.certs` — `{ cn, group, reload }` entries to enroll.
+- `services.backup` — a list of `{ namespace, directories, excludes }`.
+  `namespace` defaults to the hostname and must match a repository on the
+  backup host. The restic repository password is loaded as the systemd
+  credential `backup-password-<namespace>`: a credential passed to the system
+  (e.g. injected by a hypervisor via SMBIOS), or otherwise a root-only file
+  `/etc/credstore/backup-password-<namespace>`. On an impermanent root, persist
+  `/etc/credstore`.
+- `services.backupClient.cacheDir` — restic cache (default
+  `/var/lib/restic-backup-cache`). Persist it on an impermanent root.
 
 ### Consuming flake
 
