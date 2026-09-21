@@ -40,7 +40,7 @@ def state_name(connected):
 
 
 def icon_pixmaps(state):
-    """Color plus check/cross keeps both states distinguishable."""
+    """Use the entire tray icon for status, with a slash as a second visual cue."""
     pixmaps = []
     for size in (22, 32, 64):
         scale = 4
@@ -49,21 +49,17 @@ def icon_pixmaps(state):
         def line(points, fill, width=3):
             draw.line([(x * scale, y * scale) for x, y in points], fill=fill,
                       width=width * scale, joint="curve")
-        foreground = "#eff0f1" if state == "connected" else "#b0b6bd"
-        draw.rounded_rectangle((4*scale, 10*scale, 54*scale, 44*scale),
-                               radius=5*scale, outline=foreground, width=3*scale)
-        for y in (19, 27):
-            for x in (13, 23, 33, 43):
-                line([(x, y), (x+3, y)], foreground, 3)
-        line([(17, 36), (39, 36)], foreground, 3)
-        color = {"connected": "#73d39b", "disconnected": "#b0b6bd"}[state]
-        draw.ellipse((36*scale, 34*scale, 64*scale-1, 62*scale), fill=color,
-                     outline="#232629", width=2*scale)
-        if state == "connected":
-            line([(42, 48), (47, 53), (57, 42)], "#232629", 4)
-        else:
-            line([(44, 42), (55, 53)], "#232629", 4)
-            line([(44, 53), (55, 42)], "#232629", 4)
+        color = "#66e3a4" if state == "connected" else "#ff6b6b"
+        ink = "#202428"
+        draw.rounded_rectangle((2*scale, 7*scale, 62*scale, 57*scale),
+                               radius=7*scale, fill=color)
+        for y in (20, 30):
+            for x in (12, 24, 36, 48):
+                line([(x, y), (x+4, y)], ink, 5)
+        line([(17, 44), (47, 44)], ink, 5)
+        if state == "disconnected":
+            line([(10, 53), (54, 11)], color, 13)
+            line([(10, 53), (54, 11)], ink, 7)
         rgba = image.resize((size, size), Image.Resampling.LANCZOS).tobytes()
         # The protocol requires network-order ARGB, not RGBA or premultiplied pixels.
         argb = bytearray(len(rgba))

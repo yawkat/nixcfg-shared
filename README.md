@@ -77,9 +77,9 @@ Work machines (`host.work = true`) use dark purple panels. Non-work machines kee
 standard gray Breeze Dark panels. The work theme reuses the installed Breeze
 assets and recolors only the panel backgrounds.
 
-An always-visible keyboard icon shows a green check when the Razer DeathAdder V2
-(`1532:0084`) and Das Keyboard (`24f0:0140`) are connected, or a gray cross when
-disconnected. The devices and colors are fixed. A graphical-session user service
+An always-visible, solid green keyboard icon indicates that the Razer DeathAdder
+V2 (`1532:0084`) and Das Keyboard (`24f0:0140`) are connected. When disconnected,
+the whole icon turns red and gains a bold diagonal slash. The devices and colors are fixed. A graphical-session user service
 updates the icon directly on USB connection/disconnection events, without reading
 input events, playing sounds, or debouncing. It re-registers after Plasma restarts.
 
