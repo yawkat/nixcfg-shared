@@ -21,7 +21,7 @@ DEVICES = {
 }
 
 
-def is_connected(context):
+def connection_state(context):
     # Match USB devices, not their multiple HID interfaces. Other keyboards
     # (including security keys) and renumbered event nodes are irrelevant.
     present = set()
@@ -32,15 +32,15 @@ def is_connected(context):
         except (KeyError, OSError):
             # A device can vanish while an enumeration is in progress.
             continue
-    return DEVICES.issubset(present)
-
-
-def state_name(connected):
-    return "connected" if connected else "disconnected"
+    if DEVICES.issubset(present):
+        return "connected"
+    # A first device confirms the switch before the slower device enumerates.
+    # This also describes a partial unplug without claiming it is connecting.
+    return "partial" if DEVICES & present else "disconnected"
 
 
 def icon_pixmaps(state):
-    """Use the entire tray icon for status, with a slash as a second visual cue."""
+    """Use color and shape: spacebar when ready, dots when partial, slash when absent."""
     pixmaps = []
     for size in (22, 32, 64):
         scale = 4
@@ -49,14 +49,19 @@ def icon_pixmaps(state):
         def line(points, fill, width=3):
             draw.line([(x * scale, y * scale) for x, y in points], fill=fill,
                       width=width * scale, joint="curve")
-        color = "#66e3a4" if state == "connected" else "#ff6b6b"
+        color = {"connected": "#66e3a4", "partial": "#ffd166",
+                 "disconnected": "#ff6b6b"}[state]
         ink = "#202428"
         draw.rounded_rectangle((2*scale, 7*scale, 62*scale, 57*scale),
                                radius=7*scale, fill=color)
         for y in (20, 30):
             for x in (12, 24, 36, 48):
                 line([(x, y), (x+4, y)], ink, 5)
-        line([(17, 44), (47, 44)], ink, 5)
+        if state == "partial":
+            for x in (22, 32, 42):
+                draw.ellipse(((x-2)*scale, 42*scale, (x+2)*scale, 46*scale), fill=ink)
+        else:
+            line([(17, 44), (47, 44)], ink, 5)
         if state == "disconnected":
             line([(10, 53), (54, 11)], color, 13)
             line([(10, 53), (54, 11)], ink, 7)
@@ -70,17 +75,17 @@ def icon_pixmaps(state):
 
 
 class InputIndicator(ServiceInterface):
-    def __init__(self, connected, hostname=None):
+    def __init__(self, state, hostname=None):
         super().__init__("org.kde.StatusNotifierItem")
-        self.connected = connected
+        self.state = state
         self.hostname = hostname or socket.gethostname()
         self.icons = {state: icon_pixmaps(state) for state in
-                      ("connected", "disconnected")}
+                      ("connected", "partial", "disconnected")}
 
-    def update(self, connected):
-        if connected == self.connected:
+    def update(self, state):
+        if state == self.state:
             return
-        self.connected = connected
+        self.state = state
         self.emit_properties_changed({"IconPixmap": self.IconPixmap, "ToolTip": self.ToolTip,
                                       "Title": self.Title})
         self.NewIcon()
@@ -97,13 +102,14 @@ class InputIndicator(ServiceInterface):
 
     @dbus_property(access=PropertyAccess.READ)
     def Title(self) -> 's':
-        summary = {"connected": "Input connected", "disconnected": "Input disconnected"}[state_name(self.connected)]
+        summary = {"connected": "Input connected", "partial": "Input partly connected",
+                   "disconnected": "Input disconnected"}[self.state]
         return f"{self.hostname}: {summary}"
 
     @dbus_property(access=PropertyAccess.READ)
     def Status(self) -> 's':
-        # Passive would hide the very state the user needs to see. Neither
-        # state requests attention or makes sound.
+        # Passive would hide the very state the user needs to see. No state
+        # requests attention or makes sound.
         return "Active"
 
     @dbus_property(access=PropertyAccess.READ)
@@ -112,11 +118,15 @@ class InputIndicator(ServiceInterface):
 
     @dbus_property(access=PropertyAccess.READ)
     def IconPixmap(self) -> 'a(iiay)':
-        return self.icons[state_name(self.connected)]
+        return self.icons[self.state]
 
     @dbus_property(access=PropertyAccess.READ)
     def ToolTip(self) -> '(sa(iiay)ss)':
-        detail = "Keyboard and mouse are " + state_name(self.connected) + " on this computer."
+        detail = {
+            "connected": "Keyboard and mouse are connected on this computer.",
+            "partial": "One of the keyboard and mouse is connected on this computer; the other is not yet detected.",
+            "disconnected": "Keyboard and mouse are disconnected on this computer.",
+        }[self.state]
         return ["", self.IconPixmap, self.Title, detail]
 
     @dbus_property(access=PropertyAccess.READ)
@@ -202,7 +212,7 @@ async def run():
     monitor.filter_by(subsystem="usb", device_type="usb_device")
     # Subscribe before enumerating so a switch during startup cannot be missed.
     monitor.start()
-    item = InputIndicator(is_connected(context))
+    item = InputIndicator(connection_state(context))
     bus = await MessageBus().connect()
     bus.export(ITEM_PATH, item)
     registration = WatcherRegistration(bus)
@@ -210,7 +220,7 @@ async def run():
     def device_event():
         while monitor.poll(timeout=0) is not None:
             pass
-        item.update(is_connected(context))
+        item.update(connection_state(context))
 
     loop.add_reader(monitor.fileno(), device_event)
     await registration.start()
@@ -223,7 +233,7 @@ def main():
     parser.add_argument("--check", action="store_true", help="Print current presence and exit")
     args = parser.parse_args()
     if args.check:
-        print(state_name(is_connected(pyudev.Context())))
+        print(connection_state(pyudev.Context()))
         return
     logging.basicConfig(level=logging.INFO)
     asyncio.run(run())

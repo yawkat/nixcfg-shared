@@ -78,16 +78,20 @@ standard gray Breeze Dark panels. The work theme reuses the installed Breeze
 assets and recolors only the panel backgrounds.
 
 An always-visible, solid green keyboard icon indicates that the Razer DeathAdder
-V2 (`1532:0084`) and Das Keyboard (`24f0:0140`) are connected. When disconnected,
-the whole icon turns red and gains a bold diagonal slash. The devices and colors
-are fixed. A graphical-session user service updates the icon directly on USB connection/disconnection events, without reading
+V2 (`1532:0084`) and Das Keyboard (`24f0:0140`) are both connected. As soon as
+either device appears, the icon turns amber with three dots in place of the
+spacebar, confirming the switch before the other device finishes enumerating.
+Amber also indicates that only one device remains connected after an unplug.
+When neither device is present, the whole icon turns red and gains a bold
+diagonal slash. The devices and colors are fixed. A graphical-session user service
+updates the icon directly on USB connection/disconnection events, without reading
 input events, playing sounds, or debouncing. It re-registers after Plasma restarts.
 
 After applying Home Manager, run `systemctl --user restart input-indicator` to
 apply an icon update without restarting the desktop or closing applications.
 Initial panel settings can also be applied to the running shell through Plasma
 scripting. Run `input-indicator --check` to print the current connection state
-without starting the tray application.
+(`disconnected`, `partial`, or `connected`) without starting the tray application.
 
 ## Standalone Home Manager
 
