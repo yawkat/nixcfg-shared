@@ -2,7 +2,6 @@
 
 import argparse
 import asyncio
-import json
 import logging
 import socket
 
@@ -16,9 +15,13 @@ ITEM_ID = "shared-input-indicator"
 ITEM_PATH = "/StatusNotifierItem"
 WATCHER = "org.kde.StatusNotifierWatcher"
 WATCHER_PATH = "/StatusNotifierWatcher"
+DEVICES = {
+    ("1532", "0084"),  # Razer DeathAdder V2
+    ("24f0", "0140"),  # Das Keyboard
+}
 
 
-def connected_devices(context, devices):
+def is_connected(context):
     # Match USB devices, not their multiple HID interfaces. Other keyboards
     # (including security keys) and renumbered event nodes are irrelevant.
     present = set()
@@ -29,11 +32,11 @@ def connected_devices(context, devices):
         except (KeyError, OSError):
             # A device can vanish while an enumeration is in progress.
             continue
-    return tuple((d["vendorId"].lower(), d["productId"].lower()) in present for d in devices)
+    return DEVICES.issubset(present)
 
 
 def state_name(connected):
-    return "connected" if all(connected) else "disconnected"
+    return "connected" if connected else "disconnected"
 
 
 def icon_pixmaps(state):
@@ -71,16 +74,14 @@ def icon_pixmaps(state):
 
 
 class InputIndicator(ServiceInterface):
-    def __init__(self, devices, connected, hostname=None):
+    def __init__(self, connected, hostname=None):
         super().__init__("org.kde.StatusNotifierItem")
-        self.devices = devices
-        self.connected = tuple(connected)
+        self.connected = connected
         self.hostname = hostname or socket.gethostname()
         self.icons = {state: icon_pixmaps(state) for state in
                       ("connected", "disconnected")}
 
     def update(self, connected):
-        connected = tuple(connected)
         if connected == self.connected:
             return
         self.connected = connected
@@ -199,13 +200,13 @@ class WatcherRegistration:
         await self.register()
 
 
-async def run(devices):
+async def run():
     context = pyudev.Context()
     monitor = pyudev.Monitor.from_netlink(context)
     monitor.filter_by(subsystem="usb", device_type="usb_device")
     # Subscribe before enumerating so a switch during startup cannot be missed.
     monitor.start()
-    item = InputIndicator(devices, connected_devices(context, devices))
+    item = InputIndicator(is_connected(context))
     bus = await MessageBus().connect()
     bus.export(ITEM_PATH, item)
     registration = WatcherRegistration(bus)
@@ -213,7 +214,7 @@ async def run(devices):
     def device_event():
         while monitor.poll(timeout=0) is not None:
             pass
-        item.update(connected_devices(context, devices))
+        item.update(is_connected(context))
 
     loop.add_reader(monitor.fileno(), device_event)
     await registration.start()
@@ -223,20 +224,13 @@ async def run(devices):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", required=True, help="JSON list of name/vendorId/productId entries")
     parser.add_argument("--check", action="store_true", help="Print current presence and exit")
     args = parser.parse_args()
-    with open(args.config) as stream:
-        devices = json.load(stream)
-    if not devices:
-        parser.error("At least one USB device must be configured")
     if args.check:
-        connected = connected_devices(pyudev.Context(), devices)
-        print(json.dumps({"state": state_name(connected), "devices": dict(
-            (d["name"], present) for d, present in zip(devices, connected))}))
+        print(state_name(is_connected(pyudev.Context())))
         return
     logging.basicConfig(level=logging.INFO)
-    asyncio.run(run(devices))
+    asyncio.run(run())
 
 
 if __name__ == "__main__":
