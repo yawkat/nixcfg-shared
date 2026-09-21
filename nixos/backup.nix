@@ -104,12 +104,20 @@ let
 
   # Both unit kinds share everything but the script: same credential, same
   # niceness, same network dependency.
+  # The enrollment unit is pulled in, not just ordered after: a Persistent
+  # timer catching up at boot can fire before multi-user.target has started
+  # it. Once a certificate exists its ConditionPathExists makes it a no-op.
+  enrollUnit = "local-pki-enroll-${builtins.replaceStrings [ "@" ] [ "_" ] certCn}.service";
+
   mkUnit = backup: description: script: {
     inherit description;
-    wants = [ "network-online.target" ];
+    wants = [
+      "network-online.target"
+      enrollUnit
+    ];
     after = [
       "network-online.target"
-      "local-pki-enroll-${builtins.replaceStrings [ "@" ] [ "_" ] certCn}.service"
+      enrollUnit
     ];
     serviceConfig = {
       Type = "oneshot";
@@ -129,7 +137,8 @@ in
       type = lib.types.str;
       default = "/var/lib/restic-backup-cache";
       description = ''
-        restic cache directory. The cache makes the difference between a backup
+        Used as XDG_CACHE_HOME for restic, so its cache lives in
+        `<cacheDir>/restic`. The cache makes the difference between a backup
         that reads metadata from the repository and one that re-reads
         everything, so on an impermanent root this has to be persisted.
       '';

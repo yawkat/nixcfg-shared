@@ -119,7 +119,7 @@ in
               serviceConfig = {
                 Type = "oneshot";
                 ExecStart = [
-                  "${cert-request}/bin/cert-request --ca-work-directory ${cfg.directory}/ca renew --cert-directory ${cfg.directory}/${cert.cn} --cn ${cert.cn} --group ${cert.group}"
+                  "${cert-request}/bin/cert-request --ca-work-directory ${cfg.directory}/ca renew --cert-directory ${cfg.directory}/${cert.cn} --cn ${lib.escapeShellArg cert.cn} --group ${lib.escapeShellArg cert.group}"
                 ]
                 ++ cert.reload;
               };

@@ -159,6 +159,8 @@ Set these in the consuming host module:
 
 Backup and PKI (with `localPki`/`backup` imported):
 
+- `services.localPki.enable` — required when importing `localPki` on its
+  own; `backup` turns it on itself.
 - `services.localPki.directory` — where CA and certificate state lives
   (default `/data/local-pki`). Must survive reboots: on an impermanent root,
   point it at `/persist`.
