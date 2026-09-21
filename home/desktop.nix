@@ -70,5 +70,10 @@
       Plugins.overviewEnabled = false;
       "Effect-overview".BorderActivate = 9;
     };
+
+    # Mute the "device plugged in" chime. The event lives in
+    # plasma_workspace.notifyrc as Event/deviceAdded with Action=Popup|Sound;
+    # dropping Sound here keeps the on-screen popup but silences the sound.
+    "plasma_workspace.notifyrc"."Event/deviceAdded".Action = "Popup";
   };
 }
