@@ -24,6 +24,7 @@ let
   mkPanel = screen: {
     inherit screen;
     location = "bottom";
+    opacity = if config.host.work then "opaque" else "adaptive";
     widgets = [
       "org.kde.plasma.kickoff"
       "org.kde.plasma.pager"
@@ -41,7 +42,12 @@ let
         };
       }
       "org.kde.plasma.marginsseparator"
-      { systemTray.items.extra = systemTrayExtraItems; }
+      {
+        systemTray.items = {
+          extra = systemTrayExtraItems;
+          shown = [ "shared-input-indicator" ];
+        };
+      }
       "org.kde.plasma.digitalclock"
       "org.kde.plasma.showdesktop"
     ];

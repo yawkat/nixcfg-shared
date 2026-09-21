@@ -8,6 +8,7 @@
     ./intellij.nix
     ./options.nix
     ./packages.nix
+    ./panel-indicators.nix
     ./panels.nix
     ./power.nix
     ./vscode.nix
