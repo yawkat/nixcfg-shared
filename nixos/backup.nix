@@ -16,6 +16,12 @@ let
 
   restHost = "backup.local.yawk.at";
 
+  # The repository password is a systemd credential of this name. A bare name
+  # in LoadCredential= makes systemd first look for a credential the service
+  # manager itself was handed (a VM's hypervisor can inject it via SMBIOS),
+  # then for a file of that name in /etc/credstore/ (or /run/credstore/,
+  # /usr/lib/credstore/). Hosts pick whichever suits them; this module never
+  # sees the password's location.
   credentialName = backup: "backup-password-${backup.namespace}";
 
   # Both remotes hold the same data; the local repository is cheap disk on
@@ -96,11 +102,6 @@ let
       '';
     };
 
-  # Either the password file itself, or (for VMs whose secrets are injected by
-  # the hypervisor) the name of a system credential of the same name.
-  credentialSource =
-    backup: if clientCfg.passwordFromSystemCredential then credentialName backup else backup.secretPath;
-
   # Both unit kinds share everything but the script: same credential, same
   # niceness, same network dependency.
   mkUnit = backup: description: script: {
@@ -113,7 +114,7 @@ let
     serviceConfig = {
       Type = "oneshot";
       ExecStart = lib.getExe script;
-      LoadCredential = "${credentialName backup}:${credentialSource backup}";
+      LoadCredential = "${credentialName backup}:${credentialName backup}";
       # A backup must never make the machine feel slow.
       Nice = 19;
       IOSchedulingClass = "idle";
@@ -133,17 +134,6 @@ in
         everything, so on an impermanent root this has to be persisted.
       '';
     };
-
-    passwordFromSystemCredential = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Load each repository password from the system credential
-        `backup-password-<namespace>` (e.g. passed in by the hypervisor)
-        instead of from `secretPath`. `secretPath` is then not read by this
-        module, which leaves it free to describe where the host keeps it.
-      '';
-    };
   };
 
   options.services.backup = lib.mkOption {
@@ -160,17 +150,12 @@ in
               Repository name on the backup host. Must match an entry in
               goliath's backup-host.nix, which serves it at /local/<namespace>
               and /b2/<namespace>.
-            '';
-          };
 
-          secretPath = lib.mkOption {
-            type = lib.types.str;
-            example = "/persist/secrets/backup-password";
-            description = ''
-              File holding the restic repository password, passed to the units
-              as a systemd credential. This is the key the repository was
-              created with — changing it makes every existing snapshot
-              unreadable.
+              The repository password is read from the systemd credential
+              `backup-password-<namespace>`: either passed in to the system
+              (e.g. by a hypervisor) or a file in /etc/credstore/. It is the
+              key the repository was created with — changing it makes every
+              existing snapshot unreadable.
             '';
           };
 

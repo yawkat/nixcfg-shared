@@ -163,15 +163,15 @@ Backup and PKI (with `localPki`/`backup` imported):
   (default `/data/local-pki`). Must survive reboots: on an impermanent root,
   point it at `/persist`.
 - `services.localPki.certs` — `{ cn, group, reload }` entries to enroll.
-- `services.backup` — a list of `{ namespace, secretPath, directories,
-  excludes }`. `namespace` defaults to the hostname and must match a
-  repository on the backup host; `secretPath` is the restic repository
-  password file.
+- `services.backup` — a list of `{ namespace, directories, excludes }`.
+  `namespace` defaults to the hostname and must match a repository on the
+  backup host. The restic repository password is loaded as the systemd
+  credential `backup-password-<namespace>`: a credential passed to the system
+  (e.g. injected by a hypervisor via SMBIOS), or otherwise a root-only file
+  `/etc/credstore/backup-password-<namespace>`. On an impermanent root, persist
+  `/etc/credstore`.
 - `services.backupClient.cacheDir` — restic cache (default
   `/var/lib/restic-backup-cache`). Persist it on an impermanent root.
-- `services.backupClient.passwordFromSystemCredential` — load each password
-  from the system credential `backup-password-<namespace>` (e.g. injected by
-  the hypervisor via SMBIOS) instead of reading `secretPath`.
 
 ### Consuming flake
 

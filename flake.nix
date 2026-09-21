@@ -154,7 +154,6 @@
                   ];
                   services.backup = [
                     {
-                      secretPath = "/run/secrets/backup-password";
                       directories = [ "/var/lib" ];
                       excludes = [ "*.log" ];
                     }
