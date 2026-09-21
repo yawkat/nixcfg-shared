@@ -5,7 +5,7 @@ from dbus_next.aio import MessageBus
 from dbus_next.service import ServiceInterface, method
 
 from indicator import (InputIndicator, ITEM_ID, ITEM_PATH, WATCHER, WATCHER_PATH,
-                       WatcherRegistration, is_connected, state_name)
+                       WatcherRegistration, connection_state)
 
 
 class Attributes:
@@ -34,31 +34,43 @@ class Context:
 
 
 class PresenceTests(unittest.TestCase):
-    def test_specific_devices_ignore_unrelated_keyboard(self):
-        context = Context([Device("1050", "0407"), Device("1532", "0084")])
-        self.assertFalse(is_connected(context))
-        self.assertEqual(state_name(is_connected(context)), "disconnected")
-        context.devices.append(Device("24F0", "0140"))
-        self.assertEqual(state_name(is_connected(context)), "connected")
-        context.devices = []
-        self.assertFalse(is_connected(context))
+    def test_switch_connection_and_disconnection(self):
+        unrelated = Device("1050", "0407")
+        mouse = Device("1532", "0084")
+        keyboard = Device("24F0", "0140")
+        context = Context([unrelated])
+        for devices, expected in (
+            ([unrelated], "disconnected"),
+            ([unrelated, mouse], "partial"),
+            ([unrelated, mouse, mouse], "partial"),
+            ([unrelated, mouse, keyboard], "connected"),
+            ([unrelated, keyboard], "partial"),
+            ([], "disconnected"),
+        ):
+            with self.subTest(expected=expected, devices=devices):
+                context.devices = devices
+                self.assertEqual(connection_state(context), expected)
 
     def test_unplug_during_enumeration(self):
         context = Context([Device(OSError("removed"), "0084"), Device("24f0", "0140")])
-        self.assertFalse(is_connected(context))
+        self.assertEqual(connection_state(context), "partial")
+        context.devices = [Device(KeyError("idVendor"), "0084")]
+        self.assertEqual(connection_state(context), "disconnected")
 
     def test_icons_have_distinct_states_and_valid_pixels(self):
-        item = InputIndicator(True, "test-machine")
-        connected = item.IconPixmap
-        for width, height, pixels in connected:
-            self.assertEqual(len(pixels), width * height * 4)
-            self.assertTrue(any(pixels[0::4]))
-        item.update(False)
-        self.assertNotEqual(connected, item.IconPixmap)
-        self.assertEqual(item.Status, "Active")
-        self.assertIn("disconnected", item.Title)
-        self.assertIn("disconnected", item.ToolTip[3])
-        self.assertEqual(item.Id, ITEM_ID)
+        item = InputIndicator("disconnected", "test-machine")
+        icons = []
+        for state in ("disconnected", "partial", "connected"):
+            item.update(state)
+            icons.append(item.IconPixmap)
+            for width, height, pixels in item.IconPixmap:
+                self.assertEqual(len(pixels), width * height * 4)
+                self.assertTrue(any(pixels[0::4]))
+            self.assertEqual(item.Status, "Active")
+            self.assertEqual(item.Id, ITEM_ID)
+        self.assertNotEqual(icons[0], icons[1])
+        self.assertNotEqual(icons[1], icons[2])
+        self.assertNotEqual(icons[0], icons[2])
 
 
 class FakeWatcher(ServiceInterface):
@@ -75,7 +87,7 @@ class TrayTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.publisher = await MessageBus().connect()
         self.host = await MessageBus().connect()
-        self.item = InputIndicator(False, "test-machine")
+        self.item = InputIndicator("disconnected", "test-machine")
         self.publisher.export(ITEM_PATH, self.item)
         self.watcher = FakeWatcher()
         self.host.export(WATCHER_PATH, self.watcher)
@@ -112,18 +124,28 @@ class TrayTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("disconnected", await item.get_title())
         changed = asyncio.Event()
         item.on_new_icon(changed.set)
-        self.item.update(True)
-        await asyncio.wait_for(changed.wait(), 2)
-        self.assertIn("connected", await item.get_title())
-        values = await props.call_get_all("org.kde.StatusNotifierItem")
-        self.assertEqual(values["Id"].value, ITEM_ID)
-        self.assertTrue(values["IconPixmap"].value)
-        self.assertEqual(values["ToolTip"].value[2], "test-machine: Input connected")
-        changed.clear()
-        self.item.update(True)
-        # Unchanged device enumeration should not generate redundant tray updates.
-        await asyncio.sleep(0.02)
-        self.assertFalse(changed.is_set())
+        for state, title, detail in (
+            ("partial", "Input partly connected", "not yet detected"),
+            ("connected", "Input connected", "Keyboard and mouse are connected"),
+            ("partial", "Input partly connected", "not yet detected"),
+            ("disconnected", "Input disconnected", "Keyboard and mouse are disconnected"),
+        ):
+            with self.subTest(state=state):
+                changed.clear()
+                self.item.update(state)
+                await asyncio.wait_for(changed.wait(), 2)
+                self.assertEqual(await item.get_title(), f"test-machine: {title}")
+                values = await props.call_get_all("org.kde.StatusNotifierItem")
+                self.assertEqual(values["Id"].value, ITEM_ID)
+                self.assertEqual(values["Status"].value, "Active")
+                self.assertTrue(values["IconPixmap"].value)
+                self.assertEqual(values["ToolTip"].value[2], f"test-machine: {title}")
+                self.assertIn(detail, values["ToolTip"].value[3])
+                changed.clear()
+                self.item.update(state)
+                # Unchanged enumeration should not generate redundant tray updates.
+                await asyncio.sleep(0.02)
+                self.assertFalse(changed.is_set())
 
 
 if __name__ == "__main__":
