@@ -40,9 +40,8 @@ every machine.
 
 - `host.work` — mark the machine as a work computer (default `false`).
   Configuration that is only wanted on personal machines is left out when this
-  is set: the personal-only Firefox addons (SponsorBlock, Reddit Enhancement
-  Suite, and the KDE Plasma Integration addon, plus its native messaging host)
-  and the packaged GUI tools above. Set it in the consuming Home Manager
+  is set: the personal-only Firefox addons (SponsorBlock and Reddit Enhancement
+  Suite) and the packaged GUI tools above. Set it in the consuming Home Manager
   configuration:
 
   ```nix
@@ -145,14 +144,9 @@ supplies it.
 
 - `nixosModules.default`: bootloader (systemd-boot), Nix flake settings and GC,
   locale, German (nodeadkeys) keyboard, zram swap, KDE Plasma 6 on Wayland
-  (SDDM), PipeWire, KDE Connect, the `yawkat` user with a Zsh login shell, and
-  a btrfs blank-root impermanence setup that resets `/` on every boot while
-  persisting `/nix`, `/home`, and `/persist`. Hosts consuming this module are
-  assumed to always be personal machines (the work PC uses `system-manager`
-  instead), so KDE Connect is unconditional here — unlike the Firefox addon
-  above, there is no NixOS-level `host.work` gate. It also keeps `/etc/nixos`
-  symlinked to `/home/yawkat/nixcfg` (hardcoded, like the `yawkat` user
-  above), so plain `nixos-rebuild switch` finds the flake without `--flake`.
+  (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, and a btrfs
+  blank-root impermanence setup that resets `/` on every boot while persisting
+  `/nix`, `/home`, and `/persist`.
 - `nixosModules.diskLuksBtrfs`: a [disko](https://github.com/nix-community/disko)
   layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
   holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`
