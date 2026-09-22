@@ -75,31 +75,15 @@ let
     };
   };
 
-  plasmaIntegration = firefoxAddon {
-    pname = "plasma-integration";
-    version = "2.1";
-    addonId = "plasma-browser-integration@kde.org";
-    url = "https://addons.mozilla.org/firefox/downloads/file/4614817/plasma_integration-2.1.xpi";
-    hash = "sha256-Nb+jdm4JcWDnT1Jb3lTZe7upDXJdqkJbneb+9uxenUQ=";
-    license = pkgs.lib.licenses.gpl3Only;
-  };
-
   # Only wanted on personal machines; work profiles stay minimal.
   personalAddons = [
     sponsorBlock
     redditEnhancer
-    plasmaIntegration
   ];
 in
 {
   programs.firefox = {
     enable = true;
-    # The plasma-browser-integration extension talks to this native
-    # messaging host to forward downloads/media controls/KDE Connect
-    # sharing to the Plasma desktop.
-    nativeMessagingHosts = lib.optionals (!config.host.work) [
-      pkgs.kdePackages.plasma-browser-integration
-    ];
     profiles.default = {
       name = "default";
       path = "default";
