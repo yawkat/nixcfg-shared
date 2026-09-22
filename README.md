@@ -145,19 +145,9 @@ supplies it.
 - `nixosModules.default`: bootloader (systemd-boot), Nix flake settings and GC,
   locale, German (nodeadkeys) keyboard, zram swap, KDE Plasma 6 on Wayland
 <<<<<<< HEAD
-  (SDDM), PipeWire, KDE Connect, the `yawkat` user with a Zsh login shell, and
-  a btrfs blank-root impermanence setup that resets `/` on every boot while
-  persisting `/nix`, `/home`, and `/persist`. Hosts consuming this module are
-  assumed to always be personal machines (the work PC uses `system-manager`
-  instead), so KDE Connect is unconditional here — unlike the Firefox addon
-  above, there is no NixOS-level `host.work` gate. It also keeps `/etc/nixos`
-  symlinked to `/home/yawkat/nixcfg` (hardcoded, like the `yawkat` user
-  above), so plain `nixos-rebuild switch` finds the flake without `--flake`.
-=======
   (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, and a btrfs
   blank-root impermanence setup that resets `/` on every boot while persisting
   `/nix`, `/home`, and `/persist`.
->>>>>>> parent of 8274770 (Add KDE Connect and the Firefox Plasma Integration addon (#9))
 - `nixosModules.diskLuksBtrfs`: a [disko](https://github.com/nix-community/disko)
   layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
   holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`
