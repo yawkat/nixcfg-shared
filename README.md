@@ -144,7 +144,6 @@ supplies it.
 
 - `nixosModules.default`: bootloader (systemd-boot), Nix flake settings and GC,
   locale, German (nodeadkeys) keyboard, zram swap, KDE Plasma 6 on Wayland
-<<<<<<< HEAD
   (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, and a btrfs
   blank-root impermanence setup that resets `/` on every boot while persisting
   `/nix`, `/home`, and `/persist`.
