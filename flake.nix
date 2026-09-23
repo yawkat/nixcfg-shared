@@ -23,6 +23,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
+    # Source of both Claude packages (home/claude.nix): claude-desktop, which
+    # nixpkgs does not have at all, and claude-code, which nixpkgs carries but
+    # lags on. Deliberately NOT following our nixpkgs: upstream only builds
+    # against nixpkgs-unstable and states that a stable branch will break
+    # eventually. The second nixpkgs evaluation is the price for getting the
+    # combination they test and cache, and it is only paid on machines that
+    # set host.claude.enable.
+    llm-agents.url = "github:numtide/llm-agents.nix";
+    # Agent skills, exposed as host.agentSkills by home/agent-skills.nix.
+    security-audit-skill = {
+      url = "github:cloudflare/security-audit-skill";
+      flake = false;
+    };
   };
 
   outputs =
@@ -33,6 +46,8 @@
       plasma-manager,
       disko,
       impermanence,
+      llm-agents,
+      security-audit-skill,
       ...
     }:
     let
@@ -46,6 +61,8 @@
         imports = [
           plasma-manager.homeModules.plasma-manager
           ./home
+          (import ./home/agent-skills.nix { inherit security-audit-skill; })
+          (import ./home/claude.nix { inherit llm-agents; })
         ];
       };
 
@@ -174,6 +191,7 @@
           home-activation = testHome.activationPackage;
           home-activation-work = testHomeWork.activationPackage;
           home-activation-idle = testHomeIdle.activationPackage;
+          home-activation-claude = (mkTestHome { host.claude.enable = true; }).activationPackage;
           input-indicator = pkgs.callPackage ./pkgs/input-indicator.nix { };
 
           privacy =

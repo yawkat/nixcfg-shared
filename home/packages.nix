@@ -25,6 +25,11 @@
     mtr
     sshfs
     python3
+    nodejs
+    # Sandboxing for commands run against untrusted code (e.g. by coding
+    # agents): bwrap for namespaces, prlimit (util-linux) for rlimits.
+    bubblewrap
+    util-linux
     zip
     unzip
     magic-wormhole
