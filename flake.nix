@@ -23,13 +23,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
-    # Source of both Claude packages (home/claude.nix): claude-desktop, which
-    # nixpkgs does not have at all, and claude-code, which nixpkgs carries but
-    # lags on. Deliberately NOT following our nixpkgs: upstream only builds
+    # Source of the agent desktop apps and Claude Code (home/{claude,codex}.nix).
+    # Deliberately NOT following our nixpkgs: upstream only builds
     # against nixpkgs-unstable and states that a stable branch will break
     # eventually. The second nixpkgs evaluation is the price for getting the
     # combination they test and cache, and it is only paid on machines that
-    # set host.claude.enable.
+    # set host.claude.enable or host.codex.enable.
     llm-agents.url = "github:numtide/llm-agents.nix";
     # Agent skills, exposed as host.agentSkills by home/agent-skills.nix.
     security-audit-skill = {
@@ -63,6 +62,7 @@
           ./home
           (import ./home/agent-skills.nix { inherit security-audit-skill; })
           (import ./home/claude.nix { inherit llm-agents; })
+          (import ./home/codex.nix { inherit llm-agents; })
         ];
       };
 
@@ -123,7 +123,10 @@
             };
           testHome = mkTestHome { };
           # Both sides of host.work must keep evaluating.
-          testHomeWork = mkTestHome { host.work = true; };
+          testHomeWork = mkTestHome {
+            host.work = true;
+            host.codex.enable = true;
+          };
           # Likewise for host.idle: the default is "never dim, never lock", so
           # the timeout branch needs a check of its own.
           testHomeIdle = mkTestHome {
