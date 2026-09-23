@@ -2,7 +2,7 @@
   imports = [
     ./options.nix
     ./common.nix
-    ./claude.nix
+    ./agents.nix
     ./desktop.nix
     ./users.nix
     ./impermanence.nix
