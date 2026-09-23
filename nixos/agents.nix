@@ -1,14 +1,14 @@
-# Substituter for the llm-agents flake behind the home host.claude.enable
-# option (see home/claude.nix). It builds against its own nixpkgs-unstable, so
-# without this every rebuild that bumps the input recompiles the Claude
-# packages' dependency closure locally. Only added when some Home Manager user
-# enables Claude, so machines without it (work) don't trust the extra cache.
+# Cache for the llm-agents packages used by the optional home agent modules.
+# They use their own nixpkgs-unstable; enable the cache only when a Home
+# Manager user enables Claude or Codex.
 { config, lib, ... }:
 let
-  claudeUsers = lib.filterAttrs (_: user: user.host.claude.enable) (config.home-manager.users or { });
+  agentUsers = lib.filterAttrs (
+    _: user: (user.host.claude.enable or false) || (user.host.codex.enable or false)
+  ) (config.home-manager.users or { });
 in
 {
-  nix.settings = lib.mkIf (claudeUsers != { }) {
+  nix.settings = lib.mkIf (agentUsers != { }) {
     extra-substituters = [ "https://cache.numtide.com" ];
     extra-trusted-public-keys = [
       "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="

@@ -10,7 +10,7 @@ No license is granted for this repository.
 
 - `homeManagerModules.default`: shared packages plus Git, VS Code, IntelliJ
   IDEA, JDKs, Zsh, Starship, Firefox, Ghostty, GTK, KDE preferences, and the
-  personal GUI tools below, and the opt-in Claude setup below.
+  personal GUI tools below, and the opt-in Claude and Codex setups below.
 
 The package set includes unfree software, so consumers must enable
 `nixpkgs.config.allowUnfree`.
@@ -36,19 +36,28 @@ machines (gated on `host.work`, see below):
 `kdePackages.spectacle` is in the shared packages unconditionally, so it is on
 every machine.
 
-### Claude and agent skills
+### Claude, Codex, and agent skills
 
 - `host.claude.enable` (default `false`, so work machines stay without it)
   installs Claude Code (through `programs.claude-code`) and Claude Desktop,
   both from [llm-agents.nix](https://github.com/numtide/llm-agents.nix).
   Neither self-updates on Linux; `nix flake update llm-agents` bumps both.
+- `host.codex.enable` (default `false`) installs Codex CLI from nixpkgs
+  (through `programs.codex`) and the ChatGPT desktop app from llm-agents.
+  Enable it in the consuming Home Manager configuration with
+  `host.codex.enable = true;`, including on work machines. Update nixpkgs for
+  the CLI and `llm-agents` for the desktop app.
 - `host.agentSkills` is the skill list shared by the coding agents (`name` →
-  directory with a `SKILL.md`). Claude Code gets it automatically; a machine
-  using Codex can pass it to `programs.codex.skills`. Entries defined in the
-  consuming configuration are added to the shared ones. Skills are pinned
+  directory with a `SKILL.md`). Enabled Claude and Codex setups receive it
+  automatically through their Home Manager `skills` options. Entries defined
+  in the consuming configuration are added to the shared ones. Skills are pinned
   flake inputs, so `nix flake update <input>` bumps them. Shared skills:
   - `security-audit`, from
     [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill).
+
+The shared NixOS modules enable the llm-agents binary cache when any Home
+Manager user enables Claude or Codex. Standalone Home Manager consumers manage
+Nix daemon settings in their host configuration.
 
 ### Options
 
