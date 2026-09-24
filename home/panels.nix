@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   # Everything else in the tray beyond the always-visible clock/kickoff/tasks
   # row, carried over unchanged from the panel Plasma had set up by hand
@@ -41,6 +41,9 @@ let
           behavior.grouping.method = "none";
         };
       }
+      # KDE-maintained resource monitors, bundled with plasma-workspace.
+      "org.kde.plasma.systemmonitor.cpu"
+      "org.kde.plasma.systemmonitor.memory"
       "org.kde.plasma.marginsseparator"
       {
         systemTray.items = {
@@ -54,6 +57,17 @@ let
   };
 in
 {
+  home.packages = with pkgs.kdePackages; [
+    ksystemstats
+    plasma-systemmonitor
+  ];
+  # Register the upstream sensor service even outside a NixOS Plasma session.
+  systemd.user.packages = [ pkgs.kdePackages.ksystemstats ];
+  # The session bus may predate the Nix environment on non-NixOS hosts.
+  # Its standard per-user service directory is always searched for activation.
+  xdg.dataFile."dbus-1/services/org.kde.ksystemstats1.service".source =
+    "${pkgs.kdePackages.ksystemstats}/share/dbus-1/services/org.kde.ksystemstats1.service";
+
   # plasma-manager applies this by deleting and regenerating
   # plasma-org.kde.plasma.desktop-appletsrc wholesale on the next Plasma
   # login, so from here on the panel layout lives in Nix, not in whatever

@@ -115,6 +115,15 @@ Initial panel settings can also be applied to the running shell through Plasma
 scripting. Run `input-indicator --check` to print the current connection state
 (`disconnected`, `partial`, or `connected`) without starting the tray application.
 
+### Panel resource monitors
+
+Every configured panel includes KDE's built-in CPU and memory usage widgets
+beside the system tray. These are maintained as part of Plasma. Click a widget
+for details, or use its context menu to open the full Plasma System Monitor.
+The shared module installs `plasma-systemmonitor` and the `ksystemstats` sensor
+daemon and registers its upstream user service, including on non-NixOS hosts.
+Apply Home Manager and log out and back in to load the declarative panel layout.
+
 ## Standalone Home Manager
 
 Add this repository as an input, make its Nixpkgs and Home Manager inputs
