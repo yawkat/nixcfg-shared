@@ -2,6 +2,30 @@
 {
   programs.plasma.session.sessionRestore.restoreOpenApplicationsOnLogin = "startWithEmptySession";
 
+  # Unbind the global F-key shortcuts. They're global, so they swallow the
+  # same keys in every app (IntelliJ uses Ctrl+F1-F4, F7, F9, F10 and F12).
+  # With a single virtual desktop the "Switch to Desktop" ones do nothing
+  # anyway. Alt+F4 (close window) stays. The Meta key still opens the
+  # launcher; only its Alt+F1 alternative is dropped. kglobalaccel rewrites
+  # kglobalshortcutsrc at runtime, so this goes through plasma-manager
+  # rather than qt.kde.settings; an empty list is written as "none".
+  programs.plasma.shortcuts = {
+    kwin = {
+      "Expose" = [ ];
+      "ExposeAll" = [ ];
+      "ExposeClass" = [ ];
+      "Switch to Desktop 1" = [ ];
+      "Switch to Desktop 2" = [ ];
+      "Switch to Desktop 3" = [ ];
+      "Switch to Desktop 4" = [ ];
+      "Window Operations Menu" = [ ];
+    };
+    plasmashell = {
+      "activate application launcher" = "Meta";
+      "show dashboard" = [ ];
+    };
+  };
+
   gtk = {
     enable = true;
     colorScheme = "dark";
@@ -70,10 +94,14 @@
     # The Zoom effect goes too: it binds Meta+Plus / Meta+= / Meta+Minus to
     # magnify the whole screen, which is too easy to hit by accident. With
     # the plugin unloaded KWin never registers those global shortcuts.
+    #
+    # Likewise the tiling editor (Meta+T). Only the editor UI goes; the
+    # Meta+arrow quick-tile shortcuts are part of KWin core and keep working.
     kwinrc = {
       Plugins.overviewEnabled = false;
       "Effect-overview".BorderActivate = 9;
       Plugins.zoomEnabled = false;
+      Plugins.tileseditorEnabled = false;
     };
 
     # Silence the "device plugged in"/"device unplugged" notifications
