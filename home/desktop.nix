@@ -66,9 +66,14 @@
     # the plugin removes the effect itself (and with it Meta+W); the screen
     # edge is pinned to KWin's ElectricNone (9) as well, so the corner stays
     # inert even if something re-enables the plugin behind our back.
+    #
+    # The Zoom effect goes too: it binds Meta+Plus / Meta+= / Meta+Minus to
+    # magnify the whole screen, which is too easy to hit by accident. With
+    # the plugin unloaded KWin never registers those global shortcuts.
     kwinrc = {
       Plugins.overviewEnabled = false;
       "Effect-overview".BorderActivate = 9;
+      Plugins.zoomEnabled = false;
     };
 
     # Silence the "device plugged in"/"device unplugged" notifications
