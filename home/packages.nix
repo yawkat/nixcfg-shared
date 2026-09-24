@@ -8,7 +8,6 @@
     nixfmt
     rsync
     tmux
-    htop
     ncdu
     maven
     jdk25

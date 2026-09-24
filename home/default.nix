@@ -5,6 +5,7 @@
     ./git.nix
     ./ghostty.nix
     ./gui-tools.nix
+    ./htop.nix
     ./intellij.nix
     ./options.nix
     ./packages.nix
