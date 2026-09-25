@@ -41,13 +41,12 @@ let
 in
 maven.buildMavenPackage {
   pname = "paste-cli";
-  version = "1.0-unstable-2026-09-19";
+  version = "1.0-unstable-2026-09-25";
 
   src = fetchFromGitHub {
     owner = "yawkat";
     repo = "paste";
-    # PR #2 (cli-stdin-spectacle) head, launcher/desktop dropped.
-    rev = "29bfe554ef6ce6483fcbbea8ec34c36d729b3d82";
+    rev = "ef6ccf25e911c07e84ab10dc628244aa8a3766ea";
     hash = "sha256-bYWEi3gnuk9R4kaJUrfyXfN59u5HOAF1osx38GmaVvg=";
   };
 

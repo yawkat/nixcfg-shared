@@ -34,13 +34,12 @@ let
 in
 maven.buildMavenPackage {
   pname = "password-gui";
-  version = "1.0-unstable-2026-09-19";
+  version = "1.0-unstable-2026-09-25";
 
   src = fetchFromGitHub {
     owner = "yawkat";
     repo = "password-java";
-    # PR #1 (gui) head, launcher/desktop dropped.
-    rev = "e134179aa81a71a34320a613af08d7b0c74d8d59";
+    rev = "55102d35cf8e6d79e60df790cad879adfc4bef9b";
     hash = "sha256-Ms+mMkmlizUAQtyzx1SHgdTLupcrrJtBlPcXq8Ae+6s=";
   };
 
@@ -49,7 +48,11 @@ maven.buildMavenPackage {
   # still packaged and resolves; the GUI tests need a display to *run*, so they
   # are compiled but not executed.
   mvnParameters = "-pl gui -am -DskipTests -Dqtjambi.version=${qtVersion}";
-  mvnHash = "sha256-lFP7AX1hM5yAyI2Ru1AEDL+hJuDaP+y/pwhrFH1S5LA=";
+  mvnHash = "sha256-ARSFiRCGdMP6ECPPnqUJhcTtbqOzSUx3CM9akx5EXUg=";
+  # The fetched dependencies include the QtJambi jars for qtVersion, so put it
+  # in the FOD name: a Qt bump then fails with a hash mismatch instead of
+  # silently reusing the old dependency set and failing offline resolution.
+  mvnFetchExtraArgs.pname = "maven-deps-password-gui-qt${qtVersion}";
 
   nativeBuildInputs = [ makeWrapper ];
 
