@@ -21,6 +21,39 @@ let
     "org.kde.kdeconnect"
   ];
 
+  # The generic org.kde.plasma.systemmonitor applet, which the cpu/memory
+  # presets are just defaults for. Sensor ids go into the config verbatim
+  # rather than through plasma-manager's `sensors` option, which demands a
+  # colour per id and can't express that `cpu/cpu.*/usage` is a wildcard
+  # expanded to one sensor per core at runtime.
+  mkSystemMonitor =
+    {
+      title,
+      face,
+      sensors,
+      total,
+      details,
+      faceConfig,
+    }:
+    let
+      # Plasma stores sensor lists as a JSON array inside a single string.
+      idList = builtins.toJSON;
+    in
+    {
+      systemMonitor = {
+        inherit title;
+        displayStyle = face;
+        settings = {
+          Sensors = {
+            highPrioritySensorIds = idList sensors;
+            totalSensors = idList [ total ];
+            lowPrioritySensorIds = idList details;
+          };
+          "${face}/General" = faceConfig;
+        };
+      };
+    };
+
   mkPanel = screen: {
     inherit screen;
     location = "bottom";
@@ -42,8 +75,42 @@ let
         };
       }
       # KDE-maintained resource monitors, bundled with plasma-workspace.
-      "org.kde.plasma.systemmonitor.cpu"
-      "org.kde.plasma.systemmonitor.memory"
+      # One cell per core, shaded by that core's usage.
+      (mkSystemMonitor {
+        title = "CPU";
+        face = "org.kde.ksysguard.colorgrid";
+        sensors = [ "cpu/cpu.*/usage" ];
+        total = "cpu/all/usage";
+        details = [
+          "cpu/all/cpuCount"
+          "cpu/all/coreCount"
+        ];
+        faceConfig = {
+          # Theme highlight colour for every core, instead of a different
+          # palette colour per core, so only the shade carries meaning.
+          useSensorColor = false;
+        };
+      })
+      # A single vertical bar filling up as physical memory is used.
+      (mkSystemMonitor {
+        title = "Memory";
+        face = "org.kde.ksysguard.barchart";
+        sensors = [ "memory/physical/usedPercent" ];
+        total = "memory/physical/usedPercent";
+        details = [
+          "memory/physical/used"
+          "memory/physical/total"
+        ];
+        faceConfig = {
+          horizontalBars = false;
+          showLegend = false;
+          showGridLines = false;
+          showYAxisLabels = false;
+          rangeAuto = false;
+          rangeFrom = 0;
+          rangeTo = 100;
+        };
+      })
       "org.kde.plasma.marginsseparator"
       {
         systemTray.items = {
