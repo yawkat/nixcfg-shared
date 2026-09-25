@@ -2,7 +2,11 @@
 {
   programs.ghostty = {
     enable = true;
-    settings.theme = "Ayu";
+    settings = {
+      theme = "Ayu";
+      # Don't block logout/shutdown with a "close window?" prompt.
+      confirm-close-surface = false;
+    };
   };
 
   xdg.terminal-exec = {
