@@ -28,10 +28,11 @@ machines (gated on `host.work`, see below):
   Spectacle *Export → Open With* entry (`image/png;image/jpeg`) and a Dolphin
   *Share via paste* service menu, so screenshots and files upload straight from
   Plasma. Named `paste-cli` so it does not shadow coreutils' `paste`.
-- `password-gui`: the QtJambi [password](https://github.com/yawkat/password-java)
-  manager GUI (x86_64 only — QtJambi's native library is x86_64). The QtJambi
-  version is pinned to whatever Qt 6 nixpkgs ships (via `-Dqtjambi.version`), and
-  the wrapper points it at the system Qt and defaults to the Wayland platform.
+- `password-gui`: the Compose Multiplatform desktop app of the
+  [password](https://github.com/yawkat/password-java) manager (x86_64 only, as
+  it bundles Skiko's linux-x64 native libraries). It is taken from the upstream
+  flake's `app` package (the `password-java` input, following our nixpkgs), which
+  builds it with Gradle; `nix flake update password-java` bumps it.
 
 `kdePackages.spectacle` is in the shared packages unconditionally, so it is on
 every machine.

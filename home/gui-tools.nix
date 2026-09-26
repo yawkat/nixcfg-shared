@@ -1,3 +1,4 @@
+{ password-java }:
 {
   config,
   lib,
@@ -10,7 +11,9 @@ let
   # Spectacle "Open With" entry and a Dolphin service menu; password-gui ships
   # its desktop entry.
   paste-cli = pkgs.callPackage ../pkgs/paste-cli.nix { };
-  password-gui = pkgs.callPackage ../pkgs/password-gui.nix { };
+  # password-gui comes from the upstream flake, see the input in flake.nix;
+  # `nix flake update password-java` bumps it.
+  password-gui = password-java.packages.${pkgs.stdenv.hostPlatform.system}.app;
 in
 {
   home.packages = lib.optionals (!config.host.work) (
@@ -22,7 +25,8 @@ in
       pkgs.ffmpeg
       pkgs.thunderbird
     ]
-    # password-gui bundles an x86_64-only QtJambi native library.
+    # password-gui bundles x86_64-only Skiko native libraries, and upstream
+    # only exposes the app package there.
     ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [ password-gui ]
   );
 
