@@ -119,9 +119,10 @@ scripting. Run `input-indicator --check` to print the current connection state
 
 Every configured panel includes KDE's built-in system monitor widget twice
 beside the system tray: a grid with one cell per CPU core, shaded by that
-core's usage, and a single vertical bar for physical memory usage. These are
-maintained as part of Plasma. Click a widget
-for details, or use its context menu to open the full Plasma System Monitor.
+core's usage and refreshed every two seconds, and a single vertical bar for
+physical memory usage. These are maintained as part of Plasma; the CPU grid
+uses a copy of Plasma's colour grid face with the per-cell percentages
+removed. Click a widget for details, or use its context menu to open the full Plasma System Monitor.
 The shared module installs `plasma-systemmonitor` and the `ksystemstats` sensor
 daemon and registers its upstream user service, including on non-NixOS hosts.
 Apply Home Manager and log out and back in to load the declarative panel layout.
