@@ -21,6 +21,20 @@ let
     "org.kde.kdeconnect"
   ];
 
+  # KDE's colour grid face prints each cell's value on top of its shade, with
+  # no option to turn that off. This copy under its own id drops the labels
+  # and nothing else; cell size still comes from the grid layout, not the text.
+  quietColorGridId = "local.ksysguard.colorgrid-quiet";
+  quietColorGrid = pkgs.runCommand quietColorGridId { nativeBuildInputs = [ pkgs.jq ]; } ''
+    cp -r ${pkgs.kdePackages.libksysguard}/share/ksysguard/sensorfaces/org.kde.ksysguard.colorgrid $out
+    chmod -R u+w $out
+    substituteInPlace $out/contents/ui/FaceGrid.qml \
+      --replace-fail "text: sensor.formattedValue" ""
+    jq '.KPlugin.Id = "${quietColorGridId}" | .KPlugin.Name = "Color Grid (no labels)"' \
+      $out/metadata.json > metadata.json
+    mv metadata.json $out/metadata.json
+  '';
+
   # The generic org.kde.plasma.systemmonitor applet, which the cpu/memory
   # presets are just defaults for. Sensor ids go into the config verbatim
   # rather than through plasma-manager's `sensors` option, which demands a
@@ -34,6 +48,8 @@ let
       total,
       details,
       faceConfig,
+      # Minimum milliseconds between redraws; 0 follows the sensor daemon.
+      updateRateLimit ? 0,
     }:
     let
       # Plasma stores sensor lists as a JSON array inside a single string.
@@ -44,6 +60,7 @@ let
         inherit title;
         displayStyle = face;
         settings = {
+          Appearance = { inherit updateRateLimit; };
           Sensors = {
             highPrioritySensorIds = idList sensors;
             totalSensors = idList [ total ];
@@ -78,7 +95,10 @@ let
       # One cell per core, shaded by that core's usage.
       (mkSystemMonitor {
         title = "CPU";
-        face = "org.kde.ksysguard.colorgrid";
+        face = quietColorGridId;
+        # Per-core shades flicker at the daemon's default rate; a slower
+        # refresh reads as load rather than noise.
+        updateRateLimit = 2000;
         sensors = [ "cpu/cpu.*/usage" ];
         total = "cpu/all/usage";
         details = [
@@ -128,6 +148,7 @@ in
     ksystemstats
     plasma-systemmonitor
   ];
+  xdg.dataFile."ksysguard/sensorfaces/${quietColorGridId}".source = quietColorGrid;
   # Register the upstream sensor service even outside a NixOS Plasma session.
   systemd.user.packages = [ pkgs.kdePackages.ksystemstats ];
   # The session bus may predate the Nix environment on non-NixOS hosts.
