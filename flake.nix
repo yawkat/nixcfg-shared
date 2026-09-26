@@ -35,6 +35,13 @@
       url = "github:cloudflare/security-audit-skill";
       flake = false;
     };
+    # Source of password-gui (home/gui-tools.nix). Upstream builds it with
+    # Gradle and ships the package in its own flake, including the pinned
+    # dependency set, so we use that instead of packaging it here.
+    password-java = {
+      url = "github:yawkat/password-java";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -47,6 +54,7 @@
       impermanence,
       llm-agents,
       security-audit-skill,
+      password-java,
       ...
     }:
     let
@@ -60,6 +68,7 @@
         imports = [
           plasma-manager.homeModules.plasma-manager
           ./home
+          (import ./home/gui-tools.nix { inherit password-java; })
           (import ./home/agent-skills.nix { inherit security-audit-skill; })
           (import ./home/claude.nix { inherit llm-agents; })
           (import ./home/codex.nix { inherit llm-agents; })
@@ -77,7 +86,6 @@
 
       overlays.default = final: _prev: {
         paste-cli = final.callPackage ./pkgs/paste-cli.nix { };
-        password-gui = final.callPackage ./pkgs/password-gui.nix { };
         input-indicator = final.callPackage ./pkgs/input-indicator.nix { };
         cert-request = final.callPackage ./pkgs/device-ca-client.nix { };
       };
@@ -94,9 +102,9 @@
         {
           inherit (pkgs) paste-cli cert-request input-indicator;
         }
-        # password-gui bundles an x86_64-only QtJambi native library.
+        # password-gui bundles x86_64-only Skiko native libraries.
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
-          inherit (pkgs) password-gui;
+          password-gui = password-java.packages.${system}.app;
         }
       );
 

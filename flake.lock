@@ -173,6 +173,26 @@
         "type": "github"
       }
     },
+    "password-java": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790446342,
+        "narHash": "sha256-sUCf1p5gVxn4eTyk49Lg1hw622Rq9AV9Vwib+PpSiFA=",
+        "owner": "yawkat",
+        "repo": "password-java",
+        "rev": "323fdc33b572108fc38914b675aa847203063b42",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yawkat",
+        "repo": "password-java",
+        "type": "github"
+      }
+    },
     "plasma-manager": {
       "inputs": {
         "home-manager": [
@@ -203,6 +223,7 @@
         "impermanence": "impermanence",
         "llm-agents": "llm-agents",
         "nixpkgs": "nixpkgs_2",
+        "password-java": "password-java",
         "plasma-manager": "plasma-manager",
         "security-audit-skill": "security-audit-skill"
       }
