@@ -10,19 +10,63 @@ on:
 permissions:
   contents: read
 
+env:
+  # Local binary cache holding what the public caches don't have (unfree
+  # nixpkgs packages, password-gui), carried between runs by actions/cache.
+  NIX_LOCAL_CACHE: /home/runner/nix-local-cache
+
 jobs:
   flake:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
+        with:
+          # numtide's cache serves the llm-agents packages. The flake's own
+          # nixConfig only applies to the top-level flake, not to inputs.
+          # trusted=1 because the local cache is unsigned.
+          extra_nix_config: |
+            extra-substituters = https://cache.numtide.com file://${{ env.NIX_LOCAL_CACHE }}?trusted=1&priority=30
+            extra-trusted-public-keys = niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
+      - name: Restore local binary cache
+        id: restore
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ env.NIX_LOCAL_CACHE }}
+          key: nix-local-${{ hashFiles('flake.lock') }}-${{ hashFiles('**/*.nix') }}
+          restore-keys: |
+            nix-local-${{ hashFiles('flake.lock') }}-
+            nix-local-
+      - name: Initialize local binary cache
+        run: |
+          mkdir -p "$NIX_LOCAL_CACHE"
+          printf 'StoreDir: /nix/store\nWantMassQuery: 1\nPriority: 30\n' > "$NIX_LOCAL_CACHE/nix-cache-info"
       - name: Evaluate all supported systems
         run: nix flake check --all-systems --no-build
       - name: Build x86_64 checks
         run: >-
-          nix build
+          nix build --no-link --print-out-paths
           .#checks.x86_64-linux.home-activation
           .#checks.x86_64-linux.home-activation-work
           .#checks.x86_64-linux.home-activation-idle
           .#checks.x86_64-linux.home-activation-claude
           .#checks.x86_64-linux.privacy
+          > "$RUNNER_TEMP/outputs"
+      - name: Fill local binary cache
+        if: steps.restore.outputs.cache-hit != 'true'
+        run: |
+          # Start from scratch so paths from older lock files don't pile up.
+          find "$NIX_LOCAL_CACHE" -mindepth 1 ! -name nix-cache-info -delete
+          # Paths substituted from cache.nixos.org or numtide carry their
+          # signature; anything without one was built here (or came from the
+          # unsigned local cache) and is what the next run can't download.
+          xargs --arg-file="$RUNNER_TEMP/outputs" nix path-info --recursive --sigs \
+            | awk 'NF == 1 { print $1 }' \
+            | xargs --no-run-if-empty nix copy --to "file://$NIX_LOCAL_CACHE?compression=none"
+          du -sh "$NIX_LOCAL_CACHE"
+      - name: Save local binary cache
+        if: steps.restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.NIX_LOCAL_CACHE }}
+          key: ${{ steps.restore.outputs.cache-primary-key }}
