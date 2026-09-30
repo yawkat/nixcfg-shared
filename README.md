@@ -9,8 +9,9 @@ No license is granted for this repository.
 ## Flake output
 
 - `homeManagerModules.default`: shared packages plus Git, VS Code, IntelliJ
-  IDEA, JDKs, Zsh, Starship, Firefox, Ghostty, GTK, KDE preferences, and the
-  personal GUI tools below, and the opt-in Claude and Codex setups below.
+  IDEA, JDKs, Zsh, Starship, Firefox, Chromium, Ghostty, GTK, KDE preferences,
+  and the personal GUI tools below, and the opt-in Claude and Codex setups
+  below.
 
 The package set includes unfree software, so consumers must enable
 `nixpkgs.config.allowUnfree`.
@@ -43,6 +44,8 @@ every machine.
   installs Claude Code (through `programs.claude-code`) and Claude Desktop,
   both from [llm-agents.nix](https://github.com/numtide/llm-agents.nix).
   Neither self-updates on Linux; `nix flake update llm-agents` bumps both.
+  It also adds the [Claude in Chrome](https://claude.com/claude-in-chrome)
+  extension to Chromium.
 - `host.codex.enable` (default `false`) installs Codex CLI from nixpkgs
   (through `programs.codex`) and the ChatGPT desktop app from llm-agents.
   Enable it in the consuming Home Manager configuration with
