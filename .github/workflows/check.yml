@@ -2,6 +2,12 @@ name: Check
 
 on:
   push:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref to check out
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -11,6 +17,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - uses: cachix/install-nix-action@v31
       - name: Evaluate all supported systems
         run: nix flake check --all-systems --no-build
