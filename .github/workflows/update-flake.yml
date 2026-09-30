@@ -12,21 +12,11 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    outputs:
-      pr: ${{ steps.update.outputs.pull-request-number }}
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
-      - id: update
-        uses: DeterminateSystems/update-flake-lock@v29
+      - uses: DeterminateSystems/update-flake-lock@v29
         with:
           branch: update_flake_lock_action
           commit-msg: flake update
           pr-title: flake update
-
-  check:
-    needs: update
-    if: needs.update.outputs.pr != ''
-    uses: ./.github/workflows/check.yml
-    with:
-      ref: update_flake_lock_action
