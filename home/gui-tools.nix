@@ -24,6 +24,9 @@ in
       pkgs.gimp
       pkgs.ffmpeg
       pkgs.thunderbird
+      # The 2021.01 release in `openscad` is ancient; openscad-unstable tracks
+      # the development branch (Manifold backend etc.).
+      pkgs.openscad-unstable
     ]
     # password-gui bundles x86_64-only Skiko native libraries, and upstream
     # only exposes the app package there.
