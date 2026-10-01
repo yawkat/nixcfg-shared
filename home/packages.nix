@@ -25,6 +25,8 @@
     sshfs
     python3
     nodejs
+    uv
+    just
     # Sandboxing for commands run against untrusted code (e.g. by coding
     # agents): bwrap for namespaces, prlimit (util-linux) for rlimits.
     bubblewrap
