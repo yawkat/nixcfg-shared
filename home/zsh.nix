@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 {
   programs.zsh = {
     enable = true;
@@ -93,12 +93,12 @@
       username = {
         show_always = true;
         format = "[$user]($style)@";
-        style_user = "bold blue";
+        style_user = "bold ${config.host.promptColor}";
       };
       hostname = {
         ssh_only = false;
         format = "[$hostname]($style) ";
-        style = "bold blue";
+        style = "bold ${config.host.promptColor}";
       };
       directory = {
         format = "[$path]($style) ";
