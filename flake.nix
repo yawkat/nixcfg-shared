@@ -91,6 +91,9 @@
         localPki =
           { lib, pkgs, ... }:
           {
+            # backup imports this too; the key lets the module system dedupe the
+            # two imports, which would otherwise define the package twice
+            key = "nixcfg-shared#nixosModules.localPki";
             imports = [ ./nixos/local-pki.nix ];
             services.localPki.package =
               lib.mkDefault
