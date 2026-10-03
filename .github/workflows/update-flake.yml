@@ -9,6 +9,8 @@ on:
           (0 for an urgent update). Inputs under yawkat/ are exempt.
         type: number
         default: 5
+  schedule:
+    - cron: '0 4 * * 1'
 
 permissions:
   contents: read
