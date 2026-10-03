@@ -7,13 +7,21 @@
 let
   cfg = config.services.localPki;
 
-  cert-request = pkgs.callPackage ../pkgs/device-ca-client.nix { };
+  cert-request = cfg.package;
 
   mkSafeName = cert: builtins.replaceStrings [ "@" ] [ "_" ] cert.cn;
 in
 {
   options.services.localPki = {
     enable = lib.mkEnableOption "local PKI client";
+
+    package = lib.mkOption {
+      type = lib.types.package;
+      description = ''
+        The cert-request client. The flake's `localPki` and `backup` modules
+        default it to the one from the device-ca flake input.
+      '';
+    };
 
     directory = lib.mkOption {
       type = lib.types.str;

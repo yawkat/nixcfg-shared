@@ -42,6 +42,13 @@
       url = "github:yawkat/password-java";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Source of the local PKI client, cert-request (nixos/local-pki.nix).
+    # Only the Python client is used here, so following our nixpkgs is safe;
+    # the server's pinned Gradle dependencies aren't built.
+    device-ca = {
+      url = "github:yawkat/device-ca";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -55,6 +62,7 @@
       llm-agents,
       security-audit-skill,
       password-java,
+      device-ca,
       ...
     }:
     let
@@ -80,14 +88,29 @@
         diskLuksBtrfs = ./nixos/disk.nix;
         # Standalone and not part of `default`, so servers and VMs can use them
         # without the desktop. `backup` imports `localPki`.
-        localPki = ./nixos/local-pki.nix;
-        backup = ./nixos/backup.nix;
+        localPki =
+          { lib, pkgs, ... }:
+          {
+            # backup imports this too; the key lets the module system dedupe the
+            # two imports, which would otherwise define the package twice
+            key = "nixcfg-shared#nixosModules.localPki";
+            imports = [ ./nixos/local-pki.nix ];
+            services.localPki.package =
+              lib.mkDefault
+                device-ca.packages.${pkgs.stdenv.hostPlatform.system}.cert-request;
+          };
+        backup = {
+          imports = [
+            ./nixos/backup.nix
+            self.nixosModules.localPki
+          ];
+        };
       };
 
       overlays.default = final: _prev: {
         paste-cli = final.callPackage ./pkgs/paste-cli.nix { };
         input-indicator = final.callPackage ./pkgs/input-indicator.nix { };
-        cert-request = final.callPackage ./pkgs/device-ca-client.nix { };
+        inherit (device-ca.overlays.default final _prev) cert-request;
       };
 
       packages = forAllSystems (
@@ -173,6 +196,8 @@
             (nixpkgs.lib.nixosSystem {
               inherit system;
               modules = [
+                # both, as goliath's VMs import them
+                self.nixosModules.localPki
                 self.nixosModules.backup
                 {
                   services.localPki.certs = [
