@@ -75,6 +75,17 @@ Nix daemon settings in their host configuration.
   host.work = true;
   ```
 
+- `host.promptColor` — Starship color of the `user@host` part of the prompt,
+  so machines are easy to tell apart. Under the NixOS Home Manager module it
+  defaults to a color picked by hashing `networking.hostName` (from blue,
+  purple, yellow, orange, pink, and white); standalone Home Manager falls back
+  to blue. Two hosts can hash to the same color, so set it explicitly when
+  that happens. Any Starship color works:
+
+  ```nix
+  host.promptColor = "208";
+  ```
+
 - `host.idle` — the per-machine idle timeouts, all in seconds and all `null`
   by default, which means "never". Standby itself is not configurable: it is
   off everywhere, and the power button always shuts down.

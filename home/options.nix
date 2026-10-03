@@ -1,4 +1,20 @@
-{ lib, ... }:
+args@{ lib, ... }:
+let
+  # Distinct from the cyan directory and the green git branch, and none of them
+  # reads as the red error status.
+  promptPalette = [
+    "blue"
+    "purple"
+    "yellow"
+    "208" # orange
+    "213" # pink
+    "white"
+  ];
+  # osConfig is only passed by the NixOS Home Manager module, and a module
+  # argument with a default value would still fail without it, hence args.
+  hostName = args.osConfig.networking.hostName or "";
+  hostNameHash = lib.fromHexString (builtins.substring 0 8 (builtins.hashString "sha256" hostName));
+in
 {
   options.host = {
     work = lib.mkOption {
@@ -7,6 +23,25 @@
       description = ''
         Whether this machine is a work computer. Configuration that is only
         wanted on personal machines is left out when this is set.
+      '';
+    };
+
+    promptColor = lib.mkOption {
+      type = lib.types.str;
+      default =
+        if hostName == "" then
+          "blue"
+        else
+          builtins.elemAt promptPalette (lib.mod hostNameHash (builtins.length promptPalette));
+      defaultText = lib.literalMD ''
+        picked from a fixed palette by hashing the NixOS hostname, or `blue`
+        under standalone Home Manager
+      '';
+      example = "208";
+      description = ''
+        Starship color of the user@host part of the prompt, so machines can be
+        told apart at a glance. Any Starship color works: a name, an ANSI number
+        (0–255), or a `#rrggbb` value.
       '';
     };
 
@@ -51,7 +86,10 @@
       screens = lib.mkOption {
         type = lib.types.listOf lib.types.ints.unsigned;
         default = [ 0 ];
-        example = [ 0 1 ];
+        example = [
+          0
+          1
+        ];
         description = ''
           Which screens get a bottom taskbar panel, identified by the same
           0-indexed screen number KDE itself uses. A single-monitor laptop
