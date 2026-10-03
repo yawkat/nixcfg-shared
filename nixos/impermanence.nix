@@ -35,6 +35,12 @@
     pkgs.coreutils
   ];
 
+  # sudo records that the lecture was shown under /var/db/sudo/lectured, which
+  # is wiped on every boot, so it would otherwise reappear after each reboot.
+  security.sudo.extraConfig = ''
+    Defaults lecture = never
+  '';
+
   environment.persistence."/persist" = {
     hideMounts = true;
     directories = [
