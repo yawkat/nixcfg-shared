@@ -196,6 +196,8 @@
             (nixpkgs.lib.nixosSystem {
               inherit system;
               modules = [
+                # both, as goliath's VMs import them
+                self.nixosModules.localPki
                 self.nixosModules.backup
                 {
                   services.localPki.certs = [
