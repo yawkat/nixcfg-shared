@@ -141,7 +141,8 @@ def override_args(lock, cutoff, exempt_owner):
 
 
 def main():
-    cooldown_days = float(os.environ.get("COOLDOWN_DAYS", "5"))
+    # Empty on scheduled runs, which have no workflow_dispatch inputs.
+    cooldown_days = float(os.environ.get("COOLDOWN_DAYS") or "5")
     exempt_owner = os.environ.get("EXEMPT_OWNER", "yawkat")
     cutoff = datetime.now(timezone.utc) - timedelta(days=cooldown_days)
 
