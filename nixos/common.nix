@@ -27,6 +27,21 @@
     ];
     auto-optimise-store = true;
   };
+  # Keep a runaway build from taking the desktop down with it. Without a cap,
+  # builds fill RAM and then the zram swap, the machine thrashes for minutes,
+  # and the global OOM killer finally picks a victim by oom_score -- which
+  # favours Electron apps (adj 200-300), so it killed the tiny `nix` client
+  # inside Claude's cgroup rather than the build eating the memory. With
+  # MemoryMax the kernel OOMs inside nix-daemon.service instead and kills a
+  # builder straight away; that build fails, nothing else is touched.
+  # MemoryHigh is deliberately unset: it would throttle normal big builds.
+  systemd.services.nix-daemon.serviceConfig = {
+    MemoryMax = "80%";
+    # zram is the only swap, and the desktop needs it more than builds do.
+    MemorySwapMax = "4G";
+    # Builders inherit this, so a global OOM still prefers them over apps.
+    OOMScoreAdjust = 500;
+  };
   nix.gc = {
     automatic = true;
     dates = "weekly";
