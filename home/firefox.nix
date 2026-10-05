@@ -75,10 +75,20 @@ let
     };
   };
 
+  getCookiesTxtLocally = firefoxAddon {
+    pname = "get-cookies-txt-locally";
+    version = "0.7.2";
+    addonId = "{ac87cfd8-47b1-4401-b32e-f033af5ed96b}";
+    url = "https://addons.mozilla.org/firefox/downloads/file/4592060/get_cookies_txt_locally-0.7.2.xpi";
+    hash = "sha256-dvkDDJoui6gq2SyGXWNqM34QFqPagy5SGWnLx9Tj5+c=";
+    license = pkgs.lib.licenses.mit;
+  };
+
   # Only wanted on personal machines; work profiles stay minimal.
   personalAddons = [
     sponsorBlock
     redditEnhancer
+    getCookiesTxtLocally
   ];
 in
 {
