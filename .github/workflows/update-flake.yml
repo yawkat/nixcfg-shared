@@ -10,7 +10,9 @@ on:
         type: number
         default: 5
   schedule:
-    - cron: '0 4 * * 1'
+    # Off the full hour: GitHub delays or drops scheduled runs under load,
+    # and the top of the hour is the busiest.
+    - cron: '17 4 * * 1'
 
 permissions:
   contents: read
