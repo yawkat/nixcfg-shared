@@ -49,6 +49,13 @@
       url = "github:yawkat/device-ca";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # BOSL2 OpenSCAD library (home/gui-tools.nix). Not packaged in nixpkgs;
+    # upstream tags every commit on master, so tracking the branch is
+    # equivalent to tracking releases.
+    bosl2 = {
+      url = "github:BelfrySCAD/BOSL2";
+      flake = false;
+    };
   };
 
   outputs =
@@ -63,6 +70,7 @@
       security-audit-skill,
       password-java,
       device-ca,
+      bosl2,
       ...
     }:
     let
@@ -76,7 +84,7 @@
         imports = [
           plasma-manager.homeModules.plasma-manager
           ./home
-          (import ./home/gui-tools.nix { inherit password-java; })
+          (import ./home/gui-tools.nix { inherit password-java bosl2; })
           (import ./home/agent-skills.nix { inherit security-audit-skill; })
           (import ./home/claude.nix { inherit llm-agents; })
           (import ./home/codex.nix { inherit llm-agents; })

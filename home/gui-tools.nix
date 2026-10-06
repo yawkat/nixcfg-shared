@@ -1,4 +1,4 @@
-{ password-java }:
+{ password-java, bosl2 }:
 {
   config,
   lib,
@@ -40,5 +40,11 @@ in
   # and is covered by the restic backup of ~/.config instead.
   home.file.".config/paste/config.json" = lib.mkIf (!config.host.work) {
     text = builtins.toJSON { remote = "https://s.yawk.at/"; };
+  };
+
+  # OpenSCAD searches ~/.local/share/OpenSCAD/libraries on Linux, so
+  # `include <BOSL2/std.scad>` works without setting OPENSCADPATH.
+  home.file.".local/share/OpenSCAD/libraries/BOSL2" = lib.mkIf (!config.host.work) {
+    source = bosl2;
   };
 }
