@@ -2,6 +2,7 @@
   imports = [
     ./chromium.nix
     ./desktop.nix
+    ./docker.nix
     ./firefox.nix
     ./git.nix
     ./ghostty.nix

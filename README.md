@@ -10,8 +10,8 @@ No license is granted for this repository.
 
 - `homeManagerModules.default`: shared packages plus Git, VS Code, IntelliJ
   IDEA, JDKs, Zsh, Starship, Firefox, Chromium, Ghostty, GTK, KDE preferences,
-  and the personal GUI tools below, and the opt-in Claude and Codex setups
-  below.
+  rootless Docker, and the personal GUI tools below, and the opt-in Claude and
+  Codex setups below.
 
 The package set includes unfree software, so consumers must enable
 `nixpkgs.config.allowUnfree`.
@@ -37,6 +37,25 @@ machines (gated on `host.work`, see below):
 
 `kdePackages.spectacle` is in the shared packages unconditionally, so it is on
 every machine.
+
+### Rootless Docker
+
+Every machine, work ones included, gets a per-user Docker daemon as a
+`systemd --user` service, so no root-equivalent `docker` group is needed. Its
+data lives in `~/.local/share/docker`. `DOCKER_HOST` points at its socket for
+shells and, through `environment.d`, for GUI apps, so the CLI and
+Testcontainers work without further setup. A weekly user timer runs
+`docker system prune --all`.
+
+The host has to provide what an unprivileged user cannot: setuid
+`newuidmap`/`newgidmap` and `/etc/subuid` and `/etc/subgid` ranges for the
+user. NixOS does both by default for normal users. On other distributions,
+install the `uidmap` package (Debian and Ubuntu) and check that the user has
+subordinate ID ranges. Ubuntu 24.04 and later also restrict unprivileged user
+namespaces through AppArmor, which blocks `rootlesskit` from the Nix store
+unless it is given a profile.
+
+Log out and back in after the first activation so `DOCKER_HOST` is set.
 
 ### Claude, Codex, and agent skills
 
@@ -194,10 +213,9 @@ supplies it.
 
 - `nixosModules.default`: bootloader (systemd-boot), Nix flake settings and GC,
   locale, German (nodeadkeys) keyboard, zram swap, KDE Plasma 6 on Wayland
-  (SDDM), PipeWire, rootless Docker (a per-user daemon with `DOCKER_HOST` set
-  for login sessions), the `yawkat` user with a Zsh login shell, and a btrfs
-  blank-root impermanence setup that resets `/` on every boot while
-  persisting `/nix`, `/home`, and `/persist`.
+  (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, and a btrfs
+  blank-root impermanence setup that resets `/` on every boot while persisting
+  `/nix`, `/home`, and `/persist`.
 - `nixosModules.diskLuksBtrfs`: a [disko](https://github.com/nix-community/disko)
   layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
   holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`

@@ -8,6 +8,5 @@
     ./impermanence.nix
     ./sleep.nix
     ./backup-drives.nix
-    ./docker.nix
   ];
 }
