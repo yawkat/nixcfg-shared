@@ -24,7 +24,7 @@ in
     environment.DOCKER_HOST = "unix://%t/docker.sock";
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${docker}/bin/docker system prune --force";
+      ExecStart = "${docker}/bin/docker system prune --all --force";
     };
   };
   systemd.user.timers.docker-prune = {
