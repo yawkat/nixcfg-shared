@@ -194,9 +194,10 @@ supplies it.
 
 - `nixosModules.default`: bootloader (systemd-boot), Nix flake settings and GC,
   locale, German (nodeadkeys) keyboard, zram swap, KDE Plasma 6 on Wayland
-  (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, and a btrfs
-  blank-root impermanence setup that resets `/` on every boot while persisting
-  `/nix`, `/home`, and `/persist`.
+  (SDDM), PipeWire, Docker (with `yawkat` in the `docker` group and
+  `/var/lib/docker` persisted), the `yawkat` user with a Zsh login shell, and a
+  btrfs blank-root impermanence setup that resets `/` on every boot while
+  persisting `/nix`, `/home`, and `/persist`.
 - `nixosModules.diskLuksBtrfs`: a [disko](https://github.com/nix-community/disko)
   layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
   holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`
