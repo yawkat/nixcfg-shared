@@ -16,6 +16,10 @@
     fi
   '';
 
+  # Every machine with the default module is a physical PC. Warnings go out
+  # through failure-notify.nix.
+  services.smartd.enable = true;
+
   # systemd in initrd gives a clean LUKS passphrase prompt and lets the
   # blank-root rollback run as an ordered service before the root mount.
   boot.initrd.systemd.enable = true;

@@ -230,6 +230,10 @@ supplies it.
   repositories. Authenticates with the local-PKI client certificate
   `backup@<hostName>.local.yawk.at`, which it enrolls itself (it imports
   `localPki`). Also standalone.
+- `nixosModules.failureNotify`: push notifications through
+  [ntfy](https://ntfy.sh) when a listed service fails, and for smartd warnings
+  where smartd is enabled. `backup` imports it and lists its own units;
+  `default` imports it and enables smartd. Also standalone.
 
 Networking is intentionally left to the host: a wired machine wants static
 `systemd-networkd`, a laptop wants NetworkManager, so each host configures its
@@ -259,6 +263,15 @@ Backup and PKI (with `localPki`/`backup` imported):
   `/etc/credstore`.
 - `services.backupClient.cacheDir` — restic cache (default
   `/var/lib/restic-backup-cache`). Persist it on an impermanent root.
+- `services.failureNotify.units` — services that notify when they fail (the
+  backup units are added automatically). The ntfy topic URL, e.g.
+  `https://ntfy.sh/<topic>`, is loaded as the systemd credential
+  `failure-notify-url`, found like the backup password. On the free ntfy.sh
+  tier the topic name is the only access control, so pick a long random one.
+- `services.failureNotify.command` (read-only) — the `failure-notify TITLE
+  [MESSAGE]` script, message from stdin if not given, for other configuration
+  to send notifications with. It needs root, or the credential loaded into the
+  calling unit.
 
 ### Consuming flake
 
