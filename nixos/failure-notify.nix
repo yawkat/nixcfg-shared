@@ -15,38 +15,86 @@ let
   # or the nix store. It is low value, so a command line is fine.
   credentialName = "failure-notify-url";
 
-  notifyScript = pkgs.writeShellApplication {
+  # `failure-notify TITLE [MESSAGE]`, the message read from stdin if not
+  # given. Callers outside a unit with LoadCredential= (smartd, ZED) find the
+  # credential where systemd would: among the system credentials or in a
+  # credstore directory. Both are root-only.
+  notifyCommand = pkgs.writeShellApplication {
     name = "failure-notify";
     runtimeInputs = [
       pkgs.curl
       pkgs.coreutils
     ];
     text = ''
-      unit="$1"
-      host=${lib.escapeShellArg config.networking.hostName}
-
-      # systemd sets MONITOR_* in units started through OnFailure=. The
-      # message deliberately carries no log output: anyone with the topic
-      # name can read it.
-      message="$unit failed: ''${MONITOR_SERVICE_RESULT:-unknown}"
-      if [ -n "''${MONITOR_EXIT_STATUS:-}" ]; then
-        message="$message (''${MONITOR_EXIT_CODE:-exit} $MONITOR_EXIT_STATUS)"
+      title="$1"
+      if [ $# -ge 2 ]; then
+        message="$2"
+      else
+        message="$(cat)"
       fi
-      message="$message. See journalctl -u $unit on $host."
 
+      url_file=
+      for dir in "''${CREDENTIALS_DIRECTORY:-}" /run/credentials/@system /etc/credstore /run/credstore; do
+        if [ -n "$dir" ] && [ -r "$dir"/${credentialName} ]; then
+          url_file="$dir"/${credentialName}
+          break
+        fi
+      done
+      if [ -z "$url_file" ]; then
+        echo "failure-notify: credential ${credentialName} not found" >&2
+        exit 1
+      fi
+
+      # ntfy turns longer messages into attachments.
       curl \
         --fail --silent --show-error \
         --max-time 30 --retry 10 --retry-delay 30 --retry-all-errors \
-        -H "Title: $host: $unit failed" \
+        -H "Title: ${config.networking.hostName}: $title" \
         -H "Priority: high" \
         -H "Tags: warning" \
-        --data-binary "$message" \
-        "$(cat "$CREDENTIALS_DIRECTORY"/${credentialName})"
+        --data-binary "$(printf '%s' "$message" | head -c 4000)" \
+        "$(cat "$url_file")"
     '';
   };
+
+  unitScript = pkgs.writeShellScript "failure-notify-unit" ''
+    unit="$1"
+    # systemd sets MONITOR_* in units started through OnFailure=. The message
+    # deliberately carries no log output: anyone with the topic name can read
+    # it.
+    message="$unit failed: ''${MONITOR_SERVICE_RESULT:-unknown}"
+    if [ -n "''${MONITOR_EXIT_STATUS:-}" ]; then
+      message="$message (''${MONITOR_EXIT_CODE:-exit} $MONITOR_EXIT_STATUS)"
+    fi
+    exec ${lib.getExe cfg.command} "$unit failed" "$message. See journalctl -u $unit."
+  '';
+
+  # Called by the NixOS smartd module's notification script as a sendmail
+  # replacement. The mail on stdin also carries the full `smartctl -a`; the
+  # SMARTD_* variables it inherits are all that is needed.
+  smartdMailer = pkgs.writeShellScript "failure-notify-smartd" ''
+    cat > /dev/null
+    exec ${lib.getExe cfg.command} \
+      "SMART $SMARTD_FAILTYPE on $SMARTD_DEVICESTRING" \
+      "$SMARTD_FULLMESSAGE"
+  '';
 in
 {
   options.services.failureNotify = {
+    command = lib.mkOption {
+      type = lib.types.package;
+      readOnly = true;
+      default = notifyCommand;
+      defaultText = lib.literalMD "the failure-notify script";
+      description = ''
+        `failure-notify TITLE [MESSAGE]` (message from stdin if not given), for
+        other configuration to send notifications with, e.g. as
+        `lib.getExe config.services.failureNotify.command`. Prefixes the title
+        with the host name. It needs root, or the credential
+        `${credentialName}` loaded into the calling unit, to find the topic.
+      '';
+    };
+
     units = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
@@ -57,14 +105,20 @@ in
         credential `${credentialName}`.
       '';
     };
+
+    smartd.enable = lib.mkEnableOption ''
+      notifications for smartd warnings, in place of its e-mail notifications
+    '';
+
+    zed.enable = lib.mkEnableOption ''
+      notifications for ZFS events, through the ZFS event daemon's e-mail
+      notifier (ZED's own ntfy support would put the topic into the nix store)
+    '';
   };
 
-  config = lib.mkIf (cfg.units != [ ]) {
-    systemd.services =
-      lib.genAttrs cfg.units (_: {
-        onFailure = [ "failure-notify@%n.service" ];
-      })
-      // {
+  config = lib.mkMerge [
+    {
+      systemd.services = {
         "failure-notify@" = {
           description = "Notify about the failure of %i";
           wants = [ "network-online.target" ];
@@ -73,7 +127,7 @@ in
             Type = "oneshot";
             # %i, not %I: unescaping would turn the dashes of the unit name
             # into slashes.
-            ExecStart = "${lib.getExe notifyScript} %i";
+            ExecStart = "${unitScript} %i";
             LoadCredential = "${credentialName}:${credentialName}";
             DynamicUser = true;
             PrivateTmp = true;
@@ -82,6 +136,28 @@ in
             NoNewPrivileges = true;
           };
         };
+      }
+      // lib.genAttrs cfg.units (_: {
+        onFailure = [ "failure-notify@%n.service" ];
+      });
+    }
+
+    (lib.mkIf cfg.smartd.enable {
+      services.smartd.notifications.mail = {
+        enable = true;
+        mailer = smartdMailer;
       };
-  };
+    })
+
+    (lib.mkIf cfg.zed.enable {
+      services.zfs.zed.settings = {
+        # ZED only notifies when an address is set; failure-notify ignores it.
+        ZED_EMAIL_ADDR = [ "root" ];
+        ZED_EMAIL_PROG = lib.getExe cfg.command;
+        # ZED replaces @SUBJECT@ and evaluates the line, so the quotes keep the
+        # subject one argument. The report comes on stdin.
+        ZED_EMAIL_OPTS = "'@SUBJECT@'";
+      };
+    })
+  ];
 }
