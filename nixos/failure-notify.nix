@@ -11,8 +11,8 @@ let
   # of this name, found the same way as the backup password: handed to the
   # system (e.g. by a hypervisor) or a file in /etc/credstore/. On the free
   # ntfy.sh tier the unguessable topic name is the only thing keeping others
-  # from reading or posting, so it must not end up in this public repository,
-  # the nix store, or a command line.
+  # from reading or posting, so it must not end up in this public repository
+  # or the nix store. It is low value, so a command line is fine.
   credentialName = "failure-notify-url";
 
   notifyScript = pkgs.writeShellApplication {
@@ -34,16 +34,14 @@ let
       fi
       message="$message. See journalctl -u $unit on $host."
 
-      # The URL goes to curl as a config file on stdin, not as an argument,
-      # so it never shows up in the process list.
-      url="$(cat "$CREDENTIALS_DIRECTORY"/${credentialName})"
-      printf 'url = "%s"\n' "$url" | curl -K - \
+      curl \
         --fail --silent --show-error \
         --max-time 30 --retry 10 --retry-delay 30 --retry-all-errors \
         -H "Title: $host: $unit failed" \
         -H "Priority: high" \
         -H "Tags: warning" \
-        --data-binary "$message"
+        --data-binary "$message" \
+        "$(cat "$CREDENTIALS_DIRECTORY"/${credentialName})"
     '';
   };
 in
