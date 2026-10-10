@@ -95,7 +95,7 @@
         default = ./nixos;
         diskLuksBtrfs = ./nixos/disk.nix;
         # Standalone and not part of `default`, so servers and VMs can use them
-        # without the desktop. `backup` imports `localPki`.
+        # without the desktop. `backup` imports `localPki` and `failureNotify`.
         localPki =
           { lib, pkgs, ... }:
           {
@@ -107,6 +107,7 @@
               lib.mkDefault
                 device-ca.packages.${pkgs.stdenv.hostPlatform.system}.cert-request;
           };
+        failureNotify = ./nixos/failure-notify.nix;
         backup = {
           imports = [
             ./nixos/backup.nix

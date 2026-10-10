@@ -130,7 +130,10 @@ let
   };
 in
 {
-  imports = [ ./local-pki.nix ];
+  imports = [
+    ./local-pki.nix
+    ./failure-notify.nix
+  ];
 
   options.services.backupClient = {
     cacheDir = lib.mkOption {
@@ -199,6 +202,11 @@ in
     };
 
     systemd.tmpfiles.rules = [ "d ${clientCfg.cacheDir} 0700 root root -" ];
+
+    services.failureNotify.units = lib.concatMap (backup: [
+      "backup-${backup.namespace}"
+      "backup-check-${backup.namespace}"
+    ]) cfg;
 
     systemd.services = lib.listToAttrs (
       lib.concatMap (backup: [
