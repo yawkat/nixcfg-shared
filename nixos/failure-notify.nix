@@ -24,6 +24,8 @@ let
     runtimeInputs = [
       pkgs.curl
       pkgs.coreutils
+      # iconv
+      (lib.getBin pkgs.glibc)
     ];
     text = ''
       title="$1"
@@ -45,14 +47,18 @@ let
         exit 1
       fi
 
-      # ntfy turns longer messages into attachments.
+      # ntfy turns longer messages, and ones that are not valid UTF-8, into
+      # attachments. iconv -c drops a character that head cut in half, and any
+      # other invalid bytes.
+      body="$(printf '%s' "$message" | head -c 4000 | iconv -c -f UTF-8 -t UTF-8 2>/dev/null || true)"
+
       curl \
         --fail --silent --show-error \
         --max-time 30 --retry 10 --retry-delay 30 --retry-all-errors \
         -H "Title: ${config.networking.hostName}: $title" \
         -H "Priority: high" \
         -H "Tags: warning" \
-        --data-binary "$(printf '%s' "$message" | head -c 4000)" \
+        --data-binary "$body" \
         "$(cat "$url_file")"
     '';
   };

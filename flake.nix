@@ -94,8 +94,9 @@
       nixosModules = {
         default = ./nixos;
         diskLuksBtrfs = ./nixos/disk.nix;
-        # Standalone and not part of `default`, so servers and VMs can use them
-        # without the desktop. `backup` imports `localPki` and `failureNotify`.
+        # Standalone, so servers and VMs can use them without the desktop.
+        # `localPki` and `backup` are not part of `default`; `failureNotify` is.
+        # `backup` imports `localPki` and `failureNotify`.
         localPki =
           { lib, pkgs, ... }:
           {
