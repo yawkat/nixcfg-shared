@@ -231,8 +231,8 @@ supplies it.
   `backup@<hostName>.local.yawk.at`, which it enrolls itself (it imports
   `localPki`). Also standalone.
 - `nixosModules.failureNotify`: push notifications through
-  [ntfy](https://ntfy.sh) when a listed service fails, and optionally for
-  smartd and ZFS events. `backup` imports it and lists its own units. Also
+  [ntfy](https://ntfy.sh) when a listed service fails, and for smartd warnings
+  where smartd is enabled. `backup` imports it and lists its own units. Also
   standalone.
 
 Networking is intentionally left to the host: a wired machine wants static
@@ -268,9 +268,6 @@ Backup and PKI (with `localPki`/`backup` imported):
   `https://ntfy.sh/<topic>`, is loaded as the systemd credential
   `failure-notify-url`, found like the backup password. On the free ntfy.sh
   tier the topic name is the only access control, so pick a long random one.
-- `services.failureNotify.smartd.enable`, `services.failureNotify.zed.enable`
-  — notify about smartd warnings and ZFS events. They take over smartd's mail
-  notifications and ZED's e-mail notifier.
 - `services.failureNotify.command` (read-only) — the `failure-notify TITLE
   [MESSAGE]` script, message from stdin if not given, for other configuration
   to send notifications with. It needs root, or the credential loaded into the

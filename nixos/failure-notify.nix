@@ -105,15 +105,6 @@ in
         credential `${credentialName}`.
       '';
     };
-
-    smartd.enable = lib.mkEnableOption ''
-      notifications for smartd warnings, in place of its e-mail notifications
-    '';
-
-    zed.enable = lib.mkEnableOption ''
-      notifications for ZFS events, through the ZFS event daemon's e-mail
-      notifier (ZED's own ntfy support would put the topic into the nix store)
-    '';
   };
 
   config = lib.mkMerge [
@@ -142,22 +133,13 @@ in
       });
     }
 
-    (lib.mkIf cfg.smartd.enable {
+    {
+      # Only takes effect where smartd is enabled. Replaces its e-mail
+      # notifications, which have nowhere to go.
       services.smartd.notifications.mail = {
         enable = true;
         mailer = smartdMailer;
       };
-    })
-
-    (lib.mkIf cfg.zed.enable {
-      services.zfs.zed.settings = {
-        # ZED only notifies when an address is set; failure-notify ignores it.
-        ZED_EMAIL_ADDR = [ "root" ];
-        ZED_EMAIL_PROG = lib.getExe cfg.command;
-        # ZED replaces @SUBJECT@ and evaluates the line, so the quotes keep the
-        # subject one argument. The report comes on stdin.
-        ZED_EMAIL_OPTS = "'@SUBJECT@'";
-      };
-    })
+    }
   ];
 }

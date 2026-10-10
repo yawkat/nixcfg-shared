@@ -222,7 +222,6 @@
                     }
                   ];
                   services.smartd.enable = true;
-                  services.failureNotify.smartd.enable = true;
                   networking.hostName = "ci";
                   fileSystems."/" = {
                     device = "/dev/vda";
