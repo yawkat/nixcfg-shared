@@ -232,8 +232,8 @@ supplies it.
   `localPki`). Also standalone.
 - `nixosModules.failureNotify`: push notifications through
   [ntfy](https://ntfy.sh) when a listed service fails, and for smartd warnings
-  where smartd is enabled. `backup` imports it and lists its own units. Also
-  standalone.
+  where smartd is enabled. `backup` imports it and lists its own units;
+  `default` imports it and enables smartd. Also standalone.
 
 Networking is intentionally left to the host: a wired machine wants static
 `systemd-networkd`, a laptop wants NetworkManager, so each host configures its
