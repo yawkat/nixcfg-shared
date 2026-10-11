@@ -33,6 +33,7 @@
     util-linux
     zip
     unzip
+    file
     magic-wormhole
     wget
     vim
