@@ -97,6 +97,17 @@ in
           that each need their own taskbar lists every screen index here.
         '';
       };
+
+      inputIndicator = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        example = false;
+        description = ''
+          Whether to run the keyboard and mouse switch indicator and pin it in
+          the system tray. Machines that are never on the switch, like
+          laptops, turn it off.
+        '';
+      };
     };
   };
 }

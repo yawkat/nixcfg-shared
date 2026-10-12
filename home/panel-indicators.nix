@@ -21,8 +21,8 @@ in
     plasmarc.Theme.name = themeId;
   };
 
-  home.packages = [ indicator ];
-  systemd.user.services.input-indicator = {
+  home.packages = lib.mkIf config.host.panels.inputIndicator [ indicator ];
+  systemd.user.services.input-indicator = lib.mkIf config.host.panels.inputIndicator {
     Unit = {
       Description = "Keyboard and mouse switch connection indicator";
       After = [ "graphical-session.target" ];
