@@ -127,6 +127,10 @@ Nix daemon settings in their host configuration.
   };
   ```
 
+- `host.panels.inputIndicator` — run the keyboard and mouse switch indicator
+  described below (default `true`). Turn it off on machines that are never on
+  the switch, such as laptops.
+
 ### Panel identity and input switch
 
 Work machines (`host.work = true`) use dark purple panels. Non-work machines keep

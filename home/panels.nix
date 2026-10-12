@@ -1,5 +1,16 @@
-{ config, pkgs, ... }:
+args@{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
+  # The declarative tray replaces whatever Plasma had, so a NetworkManager
+  # host needs its applet listed or loses the network icon. osConfig is only
+  # passed by the NixOS Home Manager module (see options.nix), so standalone
+  # Home Manager goes without it.
+  networkManager = args.osConfig.networking.networkmanager.enable or false;
+
   # Everything else in the tray beyond the always-visible clock/kickoff/tasks
   # row, carried over unchanged from the panel Plasma had set up by hand
   # before this module existed, so switching to declarative panels doesn't
@@ -134,8 +145,8 @@ let
       "org.kde.plasma.marginsseparator"
       {
         systemTray.items = {
-          extra = systemTrayExtraItems;
-          shown = [ "shared-input-indicator" ];
+          extra = systemTrayExtraItems ++ lib.optional networkManager "org.kde.plasma.networkmanagement";
+          shown = lib.optional config.host.panels.inputIndicator "shared-input-indicator";
         };
       }
       "org.kde.plasma.digitalclock"
