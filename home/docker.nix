@@ -53,6 +53,18 @@ in
     Install.WantedBy = [ "default.target" ];
   };
 
+  # The default json-file log driver never rotates, so a chatty long-running
+  # container grows its log without bound, and pruning doesn't touch the logs
+  # of running containers. Applies to containers created after the daemon
+  # restarts.
+  xdg.configFile."docker/daemon.json".text = builtins.toJSON {
+    log-driver = "json-file";
+    log-opts = {
+      max-size = "10m";
+      max-file = "3";
+    };
+  };
+
   # Shells read sessionVariables, while GUI apps such as IntelliJ get their
   # environment from systemd's environment.d. Both are needed so the CLI and
   # Testcontainers find the per-user socket wherever they run.
