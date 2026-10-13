@@ -10,9 +10,8 @@ No license is granted for this repository.
 
 - `homeManagerModules.default`: shared packages plus Git, VS Code, IntelliJ
   IDEA, JDKs, Zsh, Starship, SSH, Firefox, Chromium, Ghostty, GTK, KDE
-  preferences,
-  rootless Docker, and the personal GUI tools below, and the opt-in Claude and
-  Codex setups below.
+  preferences, rootless Docker, and the personal GUI tools below, and the
+  opt-in Claude and Codex setups below.
 
 The package set includes unfree software, so consumers must enable
 `nixpkgs.config.allowUnfree`.
