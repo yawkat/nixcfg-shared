@@ -9,9 +9,9 @@ No license is granted for this repository.
 ## Flake output
 
 - `homeManagerModules.default`: shared packages plus Git, VS Code, IntelliJ
-  IDEA, JDKs, Zsh, Starship, Firefox, Chromium, Ghostty, GTK, KDE preferences,
-  rootless Docker, and the personal GUI tools below, and the opt-in Claude and
-  Codex setups below.
+  IDEA, JDKs, Zsh, Starship, SSH, Firefox, Chromium, Ghostty, GTK, KDE
+  preferences, rootless Docker, and the personal GUI tools below, and the
+  opt-in Claude and Codex setups below.
 
 The package set includes unfree software, so consumers must enable
 `nixpkgs.config.allowUnfree`.
@@ -56,6 +56,13 @@ namespaces through AppArmor, which blocks `rootlesskit` from the Nix store
 unless it is given a profile.
 
 Log out and back in after the first activation so `DOCKER_HOST` is set.
+
+### SSH
+
+`~/.ssh/config` is managed and only sets client defaults. Host entries are
+machine-specific and go in `~/.ssh/config.local`, which it includes. On a
+machine with a hand-written config, move it there before activating:
+`mv ~/.ssh/config ~/.ssh/config.local`.
 
 ### Claude, Codex, and agent skills
 

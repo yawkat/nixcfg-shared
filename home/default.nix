@@ -13,6 +13,7 @@
     ./panel-indicators.nix
     ./panels.nix
     ./power.nix
+    ./ssh.nix
     ./vscode.nix
     ./zsh.nix
   ];
