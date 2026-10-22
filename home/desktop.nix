@@ -48,17 +48,16 @@
       General.ColorScheme = "BreezeDark";
       Icons.Theme = "breeze-dark";
 
-      # SDDM autologin (nixos/desktop.nix) skips the greeter on the DM
-      # service's first start, but a killed/crashed display-manager service
-      # takes the active session down with it (they share a systemd cgroup)
-      # and then re-autologins unconditionally on restart. "Switch User" on
-      # the lock screen is the one path to an unauthenticated SDDM greeter
-      # process while a session is locked, so it's the one crash-to-restart
-      # surface reachable without already being logged in. Disabling it here
-      # removes that surface rather than just hiding the button.
+      # "Switch User" and second sessions are allowed, for machines with a
+      # second account used alongside (such as a separate admin account).
+      # They were off because Switch User on the lock screen reaches an
+      # unauthenticated SDDM greeter, and a crashed display manager
+      # re-autologins (nixos/desktop.nix). That only matters where the lock
+      # screen is meant to keep someone at the keyboard out. Written as true
+      # rather than left out, to replace the false in existing kdeglobals.
       "KDE Action Restrictions" = {
-        "action/switch_user" = false;
-        "action/start_new_session" = false;
+        "action/switch_user" = true;
+        "action/start_new_session" = true;
       };
     };
 
