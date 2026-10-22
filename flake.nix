@@ -121,6 +121,11 @@
         };
       };
 
+      # review-deploy, the reviewed deploy of a checkout that an untrusted
+      # account proposes changes to (pkgs/review-deploy). Called with the
+      # host's pkgs and its checkout, proposals repository and deploy commands.
+      lib.mkReviewDeploy = args: import ./pkgs/review-deploy args;
+
       overlays.default = final: _prev: {
         paste-cli = final.callPackage ./pkgs/paste-cli.nix { };
         input-indicator = final.callPackage ./pkgs/input-indicator.nix { };
@@ -244,6 +249,7 @@
           home-activation-idle = testHomeIdle.activationPackage;
           home-activation-claude = (mkTestHome { host.claude.enable = true; }).activationPackage;
           input-indicator = pkgs.callPackage ./pkgs/input-indicator.nix { };
+          review-deploy = import ./pkgs/review-deploy/test.nix { inherit pkgs; };
 
           privacy =
             pkgs.runCommand "shared-config-privacy-check"
