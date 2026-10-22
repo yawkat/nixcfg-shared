@@ -51,6 +51,7 @@ jobs:
           .#checks.x86_64-linux.home-activation-idle
           .#checks.x86_64-linux.home-activation-claude
           .#checks.x86_64-linux.privacy
+          .#checks.x86_64-linux.review-deploy
           > "$RUNNER_TEMP/outputs"
       - name: Fill local binary cache
         if: steps.restore.outputs.cache-hit != 'true'
