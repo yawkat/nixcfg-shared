@@ -25,10 +25,12 @@
 # full diff; then the commit is merged by its hash, the one that was shown, and
 # deployed. Nothing of the proposal is evaluated or run before that.
 #
-# The review has to show what is really there: no colors and no raw control
-# characters in the pager (less shows them as ^X), a warning for invisible or
-# bidi Unicode, which can make code read differently than it runs, and every
-# file as text, whatever .gitattributes (which a proposal can change) says.
+# The review has to show what is really there: no raw control characters, and
+# invisible or bidi Unicode (which can make code read differently than it runs)
+# shown as placeholders and warned about, and every file as text, whatever
+# .gitattributes (which a proposal can change) says. The colors are added by
+# sanitize.py after it has made all of that visible, so that the escape
+# sequences less -R lets through are only its own.
 #
 # A flake.lock change is listed by input (lock-sources.py): new revisions, and a
 # warning for a new input or one whose source changed, as a swap for a fork
@@ -42,9 +44,13 @@ let
   lockSources = pkgs.writers.writePython3 "lock-sources" {
     flakeIgnore = [ "E501" ];
   } (builtins.readFile ./lock-sources.py);
+  sanitize = pkgs.writers.writePython3 "sanitize" {
+    flakeIgnore = [ "E501" ];
+  } (builtins.readFile ./sanitize.py);
 in
 pkgs.writeShellApplication {
   name = "review-deploy";
+  passthru = { inherit sanitize; };
   runtimeInputs = [
     pkgs.git
     pkgs.less
@@ -52,6 +58,13 @@ pkgs.writeShellApplication {
     pkgs.coreutils
   ];
   text = ''
+    # Colors only for a terminal; anything from the proposal goes through sanitize
+    if [ -t 1 ] && [ -z "''${NO_COLOR:-}" ]; then
+      color=--color bold=$'\e[1m' red=$'\e[1;31m' reset=$'\e[0m'
+    else
+      color=--no-color bold="" red="" reset=""
+    fi
+
     target=''${1:-${defaultTarget}}
     case $target in
       ${lib.concatMapStringsSep "|" lib.escapeShellArg deployNames}) ;;
@@ -71,7 +84,7 @@ pkgs.writeShellApplication {
       "+refs/heads/*:refs/proposed/*"; then
       new=$(git rev-parse --quiet --verify "refs/proposed/${branch}^{commit}" || echo "$old")
     else
-      echo "!!! Could not read the proposals from ${source}; going on with what is checked out" >&2
+      echo "''${red}!!! Could not read the proposals from ${source}; going on with what is checked out''${reset}" >&2
       new=$old
     fi
 
@@ -82,57 +95,71 @@ pkgs.writeShellApplication {
     # Nothing new also when the proposal is behind (the admin committed here since)
     if ! git merge-base --is-ancestor "$new" "$old"; then
       if ! git merge-base --is-ancestor "$old" "$new"; then
-        echo "The proposal is not based on what is deployed ($old); rebase it onto that" >&2
+        echo "''${red}The proposal is not based on what is deployed ($old); rebase it onto that''${reset}" >&2
         exit 1
       fi
 
-      export LESS=FX LESSSECURE=1
-      {
-        git log --no-color --reverse --stat --format='commit %H%nAuthor: %an <%ae>%n%n%w(0,4,4)%B' "$old..$new"
-        git diff --no-color --no-ext-diff --no-textconv --text "$old" "$new"
-      } | less
+      export LESS=FRX LESSSECURE=1
+      show() {
+        {
+          git log --no-color --reverse --stat --format='commit %H%nAuthor: %an <%ae>%n%n%w(0,4,4)%B' "$old..$new"
+          git diff --no-color --no-ext-diff --no-textconv --text "$old" "$new"
+        } | ${sanitize} "$color" --diff | less || true
+      }
+      show
 
-      warn=0
-      # zero-width characters, bidi controls, BOM, and C0 controls other than tab and newline
-      # (printed through cat -v, which makes them visible instead of letting them act on the terminal)
-      if git diff --no-color --no-ext-diff --no-textconv --text "$old" "$new" \
-        | LC_ALL=C.UTF-8 grep -nP '[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}\x{FEFF}]|[\x00-\x08\x0B-\x1F\x7F]' \
-        | cat -v | grep .; then
-        echo "!!! The diff has invisible or control characters (above)"
-        warn=1
-      fi
+      echo
+      echo "''${bold}$(git rev-list --count "$old..$new") commit(s) on top of $(git rev-parse --short=12 "$old"), up to $new:''${reset}"
+      git log --reverse --format='  %h %s' "$old..$new" | ${sanitize} "$color"
+      echo " $(git diff --shortstat "$old" "$new")"
 
+      warnings=0
       if ! git diff --quiet "$old" "$new" -- flake.lock; then
         echo
-        echo "flake.lock:"
-        # The names and URLs are the proposal's, hence cat -v too
-        if ! ${lockSources} <(lockAt "$old") <(lockAt "$new") | cat -v; then
-          warn=1
+        echo "''${bold}flake.lock:''${reset}"
+        # The names and URLs are the proposal's, hence sanitize too
+        if ! ${lockSources} <(lockAt "$old") <(lockAt "$new") | ${sanitize} "$color"; then
+          warnings=1
         fi
       fi
 
+      # zero-width characters, bidi controls, BOM, and C0 controls other than tab and newline
+      # (printed through sanitize, which makes them visible instead of letting them act on the terminal)
+      if git diff --no-color --no-ext-diff --no-textconv --text "$old" "$new" \
+        | LC_ALL=C.UTF-8 grep -nP '[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}\x{FEFF}]|[\x00-\x08\x0B-\x1F\x7F]' \
+        | ${sanitize} "$color" | grep .; then
+        echo "''${red}!!! The diff has invisible or control characters (above, by line of the diff)''${reset}"
+        warnings=1
+      fi
+
       echo
-      git diff --stat "$old" "$new" | tail -n1
-      echo "Deploy $new to $target?"
-      if [ "$warn" = 1 ]; then
-        echo "There were warnings: answer 'deploy anyway' to go on."
-        expected="deploy anyway"
+      short=$(git rev-parse --short=12 "$new")
+      if [ "$warnings" = 1 ]; then
+        echo "''${red}There were warnings (above).''${reset}"
+        question="Deploy $short to $target? Type 'deploy anyway' to deploy, [v]iew again, [N]o: "
       else
-        expected=yes
+        question="Deploy $short to $target? [y]es, [v]iew again, [N]o: "
       fi
-      read -r -p "> " answer
-      if [ "$answer" != "$expected" ]; then
-        echo "Not deployed"
-        exit 1
-      fi
+      while true; do
+        answer=""
+        read -r -p "''${bold}$question''${reset}" answer || true
+        case "$warnings:$answer" in
+          *:v | *:view) show ;;
+          0:y | 0:yes | "1:deploy anyway") break ;;
+          *)
+            echo "Not deployed"
+            exit 1
+            ;;
+        esac
+      done
       git merge --quiet --ff-only "$new"
     else
-      echo "Nothing new; deploying $old again"
+      echo "''${bold}Nothing new; deploying $old again''${reset}"
     fi
 
     if ! git push --quiet --force --receive-pack=${lib.escapeShellArg receivePack} ${lib.escapeShellArg source} \
       HEAD:refs/heads/deployed; then
-      echo "!!! Could not push the deployed commit to ${source}" >&2
+      echo "''${red}!!! Could not push the deployed commit to ${source}''${reset}" >&2
     fi
     ${lib.optionalString (
       notify != null

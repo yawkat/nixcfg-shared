@@ -83,8 +83,9 @@ pkgs.runCommand "review-deploy-test"
     deploy no marker
     expect 1 "Not deployed"
     [ ! -e deployed ]
-    deploy yes marker
+    deploy $'v\nyes' marker
     expect 0 "+b"
+    [ "$(grep -c "^+b" <<<"$out_text")" = 2 ]
     [ -e deployed ]
     [ "$(rev admin)" = "$(rev work)" ]
     [ "$(rev proposals.git deployed)" = "$(rev work)" ]
@@ -122,6 +123,24 @@ pkgs.runCommand "review-deploy-test"
     propose "cat ${lock "NixOS" "cccc"} > flake.lock" update
     deploy yes
     expect 0 "updated  nixpkgs (github:NixOS/nixpkgs) aaaa -> cccc"
+
+    echo "y is enough without warnings"
+    propose "echo y > y" short-answer
+    deploy y
+    expect 0 ""
+    [ "$(rev admin)" = "$(rev work)" ]
+
+    echo "with colors, the only escape sequences are the added ones"
+    colored=$(printf '@@ -0,0 +1 @@\n+x\033[2K\xe2\x80\xae\xff\n' | ${reviewDeploy.sanitize} --color --diff | tail -n1)
+    [ "$colored" = $'\e[32m+x\e[7m^[\e[27m[2K\e[7m<U+202E>\e[27m\e[7m<FF>\e[27m\e[0m' ] || {
+      echo "unexpected: $(cat -v <<<"$colored")"
+      exit 1
+    }
+    colored=$(printf ' a | 1 +\n@@ -1 +1 @@\n x | 3 +++---\n' | ${reviewDeploy.sanitize} --color --diff)
+    [ "$colored" = $' a | 1 \e[32m+\e[31m\e[0m\n\e[36m@@ -1 +1 @@\e[0m\n x | 3 +++---' ] || {
+      echo "unexpected: $(cat -v <<<"$colored")"
+      exit 1
+    }
 
     echo "a proposal that is not a fast-forward is refused"
     (cd work && git reset -q --hard HEAD~1)
