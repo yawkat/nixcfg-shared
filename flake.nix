@@ -4,8 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     # Not used here. Consumers follow it for the odd package they need newer
-    # than the stable release, so it goes through the same cooldown as the
-    # rest of their inputs.
+    # than the stable release, so it goes through the cooldown of this
+    # repository's flake update. Unlike the stable nixpkgs, it is not exempt:
+    # the packages taken from it are usually not network-exposed, so their
+    # security fixes are less urgent.
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
