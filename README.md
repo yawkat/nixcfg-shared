@@ -62,7 +62,10 @@ Log out and back in after the first activation so `DOCKER_HOST` is set.
 `~/.ssh/config` is managed and only sets client defaults. Host entries are
 machine-specific and go in `~/.ssh/config.local`, which it includes. On a
 machine with a hand-written config, move it there before activating:
-`mv ~/.ssh/config ~/.ssh/config.local`.
+`mv ~/.ssh/config ~/.ssh/config.local` (otherwise activation moves it to
+`~/.ssh/config.hm-backup`). The config is written as a real file rather than
+a symlink into the Nix store, because ssh rejects a root-owned config inside
+user namespaces that don't map root, such as sandboxed tools.
 
 ### Claude, Codex, and agent skills
 
