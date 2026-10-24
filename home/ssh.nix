@@ -18,8 +18,9 @@ in
   # but inside a user namespace that maps only the user's uid (sandboxed tools,
   # Claude sessions) root shows up as nobody and every ssh fails with "Bad
   # owner or permissions". So write the generated config as a real file the
-  # user owns instead of linking it. A differing regular file already there
-  # (hand-written, or edited since) is kept as config.hm-backup.
+  # user owns instead of linking it, read-only so it isn't edited by accident:
+  # changes belong in Nix or config.local. A differing regular file already
+  # there (hand-written, or edited since) is kept as config.hm-backup.
   home.file.".ssh/config".enable = false;
   home.activation.sshConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     sshConfig="$HOME/.ssh/config"
@@ -27,6 +28,6 @@ in
       run mv "$sshConfig" "$sshConfig.hm-backup"
     fi
     run rm -f "$sshConfig"
-    run install -D -m 600 ${generated} "$sshConfig"
+    run install -D -m 400 ${generated} "$sshConfig"
   '';
 }
