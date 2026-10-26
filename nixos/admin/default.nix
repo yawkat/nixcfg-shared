@@ -110,10 +110,15 @@ in
   # nixos-rebuild looks for /etc/nixos/flake.nix by default. The admin's
   # checkout, not the one yawkat (and its agents) edit: those changes come over
   # through review-deploy. Only touches the link when nothing unexpected
-  # already lives at /etc/nixos.
+  # already lives at /etc/nixos. An empty directory is expected: the root is
+  # wiped on every boot, and NixOS's stage 2 (prepare-root) then creates one
+  # before activation runs.
   system.activationScripts.etcNixosFlakeLink = lib.stringAfter [ "etc" ] ''
     target=${checkout}
     link=/etc/nixos
+    if [ -d "$link" ] && [ ! -L "$link" ]; then
+      rmdir "$link" 2>/dev/null || true
+    fi
     if [ -e "$link" ] && [ ! -L "$link" ]; then
       echo "warning: $link exists and is not a symlink; leaving it alone (wanted to point it at $target)" >&2
     else
