@@ -7,19 +7,6 @@
   boot.loader.systemd-boot.configurationLimit = 10;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # So `sudo nixos-rebuild switch` finds the flake without `--flake`:
-  # nixos-rebuild looks for /etc/nixos/flake.nix by default. Only touches the
-  # link when nothing unexpected already lives at /etc/nixos.
-  system.activationScripts.etcNixosFlakeLink = lib.stringAfter [ "etc" ] ''
-    target=/home/yawkat/nixcfg
-    link=/etc/nixos
-    if [ -e "$link" ] && [ ! -L "$link" ]; then
-      echo "warning: $link exists and is not a symlink; leaving it alone (wanted to point it at $target)" >&2
-    else
-      ln -sfn "$target" "$link"
-    fi
-  '';
-
   # Every machine with the default module is a physical PC. Warnings go out
   # through failure-notify.nix.
   services.smartd.enable = true;

@@ -227,9 +227,15 @@ supplies it.
 
 - `nixosModules.default`: bootloader (systemd-boot), Nix flake settings and GC,
   locale, German (nodeadkeys) keyboard, zram swap, KDE Plasma 6 on Wayland
-  (SDDM), PipeWire, the `yawkat` user with a Zsh login shell, and a btrfs
+  (SDDM), PipeWire, two users with a Zsh login shell, and a btrfs
   blank-root impermanence setup that resets `/` on every boot while persisting
-  `/nix`, `/home`, and `/persist`.
+  `/nix`, `/home`, and `/persist`. The users: `yawkat`, the daily account with
+  autologin, which runs untrusted code and can't administer anything (no
+  wheel, su or polkit admin; the `networkmanager` group where NetworkManager
+  runs), and `yawkat-admin`, the admin, used in its own session with the
+  shared Home Manager module. Changes to the host flake reach the system
+  through `review-deploy` there, from `~yawkat/nixcfg` into
+  `~yawkat-admin/nixcfg`, which `/etc/nixos` points at.
 - `nixosModules.diskLuksBtrfs`: a [disko](https://github.com/nix-community/disko)
   layout — GPT with an ESP plus a LUKS partition (interactive passphrase)
   holding a btrfs filesystem with `@root`, `@nix`, `@persist`, and `@home`
@@ -308,8 +314,11 @@ nixpkgs.lib.nixosSystem {
 ```
 
 The per-host module sets `networking.hostName`, `host.disk.device`, networking,
-`time.timeZone`, `system.stateVersion`, the user password, and wires the shared
-Home Manager module for `yawkat`.
+`time.timeZone`, `system.stateVersion`, `yawkat`'s password, and wires the shared
+Home Manager module for `yawkat`. `yawkat-admin`'s password is read from
+`/persist/passwords/yawkat-admin` (`mkpasswd -m sha-512`), which has to exist
+before the first rebuild: without it, nobody but root can administer the
+machine.
 
 The blank-root impermanence setup expects a read-only `@root-blank` btrfs
 snapshot to exist as a sibling of `@root`; create it once at install time, after
