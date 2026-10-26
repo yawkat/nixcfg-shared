@@ -10,7 +10,16 @@ in
     includes = [ "config.local" ];
     # Detect dead connections (NAT timeouts, suspend, Wi-Fi changes) so the
     # session drops instead of hanging forever.
-    settings."*".ServerAliveInterval = 60;
+    settings."*" = {
+      ServerAliveInterval = 60;
+      # `ssh foo` connects to foo.local.yawk.at. Only dotless names are
+      # expanded, so `ssh github.com` never tries github.com.local.yawk.at.
+      # Names that don't resolve there fall back to the system resolver.
+      CanonicalizeHostname = "yes";
+      CanonicalDomains = "local.yawk.at";
+      CanonicalizeMaxDots = 0;
+      CanonicalizeFallbackLocal = "yes";
+    };
   };
 
   # ssh refuses a config that isn't owned by the user or root. Home Manager's
