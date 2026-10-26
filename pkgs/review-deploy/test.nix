@@ -15,6 +15,7 @@ let
       marker = "touch ../deployed";
     };
     defaultTarget = "none";
+    notify = "printf '%s: %s\\n' >> ../notified";
   };
 
   lock =
@@ -89,6 +90,9 @@ pkgs.runCommand "review-deploy-test"
     [ -e deployed ]
     [ "$(rev admin)" = "$(rev work)" ]
     [ "$(rev proposals.git deployed)" = "$(rev work)" ]
+    # By its hash, not its subject
+    [ "$(tail -n1 notified)" = "deploy: $(git -C work rev-parse --short HEAD) to marker" ]
+    if grep -q second notified; then cat notified; exit 1; fi
 
     echo "control characters need a second look and are shown, not run"
     propose "printf 'x = 1;\033[2K\n' > c" third
