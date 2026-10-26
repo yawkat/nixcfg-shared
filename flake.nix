@@ -98,7 +98,13 @@
       };
 
       nixosModules = {
-        default = ./nixos;
+        # Needs Home Manager's NixOS module, for yawkat-admin's session
+        default = {
+          imports = [
+            ./nixos
+            (import ./nixos/admin { homeModule = self.homeManagerModules.default; })
+          ];
+        };
         diskLuksBtrfs = ./nixos/disk.nix;
         # Standalone, so servers and VMs can use them without the desktop.
         # `localPki` and `backup` are not part of `default`; `failureNotify` is.
@@ -196,6 +202,7 @@
               modules = [
                 disko.nixosModules.disko
                 impermanence.nixosModules.impermanence
+                home-manager.nixosModules.home-manager
                 self.nixosModules.default
                 self.nixosModules.diskLuksBtrfs
                 {
@@ -208,6 +215,9 @@
                   networking.hostName = "ci";
                   boot.loader.grub.enable = false;
                   system.stateVersion = "26.05";
+                  # As the hosts set it
+                  home-manager.useGlobalPkgs = true;
+                  home-manager.useUserPackages = true;
                 }
               ];
             }).config.system.build.toplevel;
@@ -280,6 +290,7 @@
               '';
         }
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
+          admin-auth = import ./nixos/admin/test.nix { inherit pkgs; };
           nixos-eval = testSystem;
           nixos-eval-server = testServer;
         }
