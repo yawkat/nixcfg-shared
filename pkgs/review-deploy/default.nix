@@ -16,7 +16,9 @@
   # picks one
   deploy,
   defaultTarget,
-  # Command that takes a title and a message, run before deploying
+  # Command that takes a title and a message, run before deploying. The message
+  # names the commit by its hash only: notifications (ntfy) are not for anything
+  # confidential, and a commit's subject can tell a lot about a system.
   notify ? null,
 }:
 # The one way a change from the untrusted side (a daily account and the agents
@@ -163,7 +165,7 @@ pkgs.writeShellApplication {
     fi
     ${lib.optionalString (
       notify != null
-    ) ''${notify} "deploy" "$(git log -1 --format='%h %s') to $target" || true''}
+    ) ''${notify} "deploy" "$(git rev-parse --short HEAD) to $target" || true''}
     case $target in
       ${lib.concatStrings (
         lib.mapAttrsToList (name: command: ''
