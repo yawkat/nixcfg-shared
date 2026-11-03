@@ -19,8 +19,8 @@ jobs:
   flake:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31
         with:
           # numtide's cache serves the llm-agents packages. The flake's own
           # nixConfig only applies to the top-level flake, not to inputs.
@@ -30,7 +30,7 @@ jobs:
             extra-trusted-public-keys = niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
       - name: Restore local binary cache
         id: restore
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ env.NIX_LOCAL_CACHE }}
           key: nix-local-${{ hashFiles('flake.lock') }}-${{ hashFiles('**/*.nix') }}
@@ -67,7 +67,7 @@ jobs:
           du -sh "$NIX_LOCAL_CACHE"
       - name: Save local binary cache
         if: steps.restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ env.NIX_LOCAL_CACHE }}
           key: ${{ steps.restore.outputs.cache-primary-key }}
