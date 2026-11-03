@@ -1,0 +1,8 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: ['config:recommended', 'helpers:pinGitHubActionDigests'],
+  // Same cooldown as the flake update.
+  minimumReleaseAge: '5 days',
+  // flake.lock is updated by update-flake.yml, and the workflows are the only other dependencies.
+  enabledManagers: ['github-actions'],
+}
