@@ -9,5 +9,6 @@
     ./sleep.nix
     ./backup-drives.nix
     ./failure-notify.nix
+    ./password-uhid.nix
   ];
 }
