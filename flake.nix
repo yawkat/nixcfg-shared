@@ -41,7 +41,8 @@
       url = "github:cloudflare/security-audit-skill";
       flake = false;
     };
-    # Source of password-gui (home/gui-tools.nix). Upstream builds it with
+    # Source of password-gui (home/gui-tools.nix) and of the NixOS module for
+    # its security key helper (nixos/password-uhid.nix). Upstream builds it with
     # Gradle and ships the package in its own flake, including the pinned
     # dependency set, so we use that instead of packaging it here.
     password-java = {
@@ -103,6 +104,8 @@
           imports = [
             ./nixos
             (import ./nixos/admin { homeModule = self.homeManagerModules.default; })
+            # services.password-uhid, for nixos/password-uhid.nix
+            password-java.nixosModules.default
           ];
         };
         diskLuksBtrfs = ./nixos/disk.nix;
