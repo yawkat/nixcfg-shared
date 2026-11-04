@@ -232,11 +232,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793780123,
-        "narHash": "sha256-l1GD4BlkN4syPPBXLz4AzgSViIF2LeIuV1YnLzKOlfA=",
+        "lastModified": 1793780784,
+        "narHash": "sha256-7gjSLJrOXup/A1QWLPXGmQMSg1LDcui609ltbo76Nao=",
         "owner": "yawkat",
         "repo": "password-java",
-        "rev": "3bc2e3dcf660645409e16c63be4bd9d3fe0669b5",
+        "rev": "73ee88aab89adb6aa1e0be8777441c671499cd57",
         "type": "github"
       },
       "original": {
