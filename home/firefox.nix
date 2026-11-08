@@ -84,11 +84,25 @@ let
     license = pkgs.lib.licenses.mit;
   };
 
+  keepa = firefoxAddon {
+    pname = "keepa";
+    version = "5.68";
+    addonId = "amptra@keepa.com";
+    url = "https://addons.mozilla.org/firefox/downloads/file/5166835/keepa-5.68.xpi";
+    hash = "sha256-4Dp0VW9HvnpYkteYVly5okKuFO9vbhLiixxIRFxcYIs=";
+    license = {
+      fullName = "Keepa Source Code License";
+      url = "https://addons.mozilla.org/en-US/firefox/addon/keepa/license/";
+      free = false;
+    };
+  };
+
   # Only wanted on personal machines; work profiles stay minimal.
   personalAddons = [
     sponsorBlock
     redditEnhancer
     getCookiesTxtLocally
+    keepa
   ];
 in
 {
