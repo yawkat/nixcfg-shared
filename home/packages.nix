@@ -36,6 +36,7 @@
     file
     magic-wormhole
     wget
+    openssl
     vim
     psmisc
     kdePackages.spectacle
