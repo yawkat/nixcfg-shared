@@ -225,6 +225,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1794165970,
+        "narHash": "sha256-XuAV2cUwaod3Bt4XFVqiXz3v1w2ex16W6Sv4S7EWres=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "ac588ef1c914865dad517b337ea0eb9694a4021c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "password-java": {
       "inputs": {
         "nixpkgs": [
@@ -242,6 +258,24 @@
       "original": {
         "owner": "yawkat",
         "repo": "password-java",
+        "type": "github"
+      }
+    },
+    "paste": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1794584585,
+        "narHash": "sha256-r031OMu9qNjNbL0hTP44flzub/LoVBX+u5WIpiFsG8w=",
+        "owner": "yawkat",
+        "repo": "paste",
+        "rev": "9920f569b9446333e831993835ffd62975c84fc2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yawkat",
+        "repo": "paste",
         "type": "github"
       }
     },
@@ -279,6 +313,7 @@
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "password-java": "password-java",
+        "paste": "paste",
         "plasma-manager": "plasma-manager",
         "security-audit-skill": "security-audit-skill"
       }

@@ -28,7 +28,9 @@ machines (gated on `host.work`, see below):
   with `wl-clipboard`, `libnotify`, and `xdg-utils` on its path. It ships a
   Spectacle *Export → Open With* entry (`image/png;image/jpeg`) and a Dolphin
   *Share via paste* service menu, so screenshots and files upload straight from
-  Plasma. Named `paste-cli` so it does not shadow coreutils' `paste`.
+  Plasma. Named `paste-cli` so it does not shadow coreutils' `paste`. It is
+  taken from the upstream flake's `cli` package (the `paste` input, with its
+  own nixpkgs); `nix flake update paste` bumps it.
 - `password-gui`: the Compose Multiplatform desktop app of the
   [password](https://github.com/yawkat/password-java) manager (x86_64 only, as
   it bundles Skiko's linux-x64 native libraries). It is taken from the upstream
