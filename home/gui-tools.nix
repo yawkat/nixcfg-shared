@@ -1,4 +1,8 @@
-{ password-java, bosl2 }:
+{
+  password-java,
+  paste,
+  bosl2,
+}:
 {
   config,
   lib,
@@ -10,9 +14,9 @@ let
   # but stay off work machines (which set host.work). paste-cli ships a
   # Spectacle "Open With" entry and a Dolphin service menu; password-gui ships
   # its desktop entry.
-  paste-cli = pkgs.callPackage ../pkgs/paste-cli.nix { };
-  # password-gui comes from the upstream flake, see the input in flake.nix;
-  # `nix flake update password-java` bumps it.
+  # paste-cli and password-gui come from the upstream flakes, see the inputs
+  # in flake.nix; `nix flake update paste password-java` bumps them.
+  paste-cli = paste.packages.${pkgs.stdenv.hostPlatform.system}.cli;
   password-gui = password-java.packages.${pkgs.stdenv.hostPlatform.system}.app;
 in
 {
