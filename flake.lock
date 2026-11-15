@@ -266,11 +266,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1794584585,
-        "narHash": "sha256-r031OMu9qNjNbL0hTP44flzub/LoVBX+u5WIpiFsG8w=",
+        "lastModified": 1794776845,
+        "narHash": "sha256-xwilr4VBEa1g5psoKoQgUrg6ZJcv1WezWJjw4trvE74=",
         "owner": "yawkat",
         "repo": "paste",
-        "rev": "9920f569b9446333e831993835ffd62975c84fc2",
+        "rev": "979d3cd4bcee6117aadfd5f388dd4797d1f9fee3",
         "type": "github"
       },
       "original": {
