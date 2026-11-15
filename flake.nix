@@ -49,6 +49,10 @@
       url = "github:yawkat/password-java";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Source of paste-cli (home/gui-tools.nix). Not following our nixpkgs:
+    # the hash of its Maven dependency download depends on the Maven version,
+    # and upstream keeps it in step with the nixpkgs in its own flake.lock.
+    paste.url = "github:yawkat/paste";
     # Source of the local PKI client, cert-request (nixos/local-pki.nix).
     # Only the Python client is used here, so following our nixpkgs is safe;
     # the server's pinned Gradle dependencies aren't built.
@@ -76,6 +80,7 @@
       llm-agents,
       security-audit-skill,
       password-java,
+      paste,
       device-ca,
       bosl2,
       ...
@@ -91,7 +96,13 @@
         imports = [
           plasma-manager.homeModules.plasma-manager
           ./home
-          (import ./home/gui-tools.nix { inherit password-java bosl2; })
+          (import ./home/gui-tools.nix {
+            inherit
+              password-java
+              paste
+              bosl2
+              ;
+          })
           (import ./home/agent-skills.nix { inherit security-audit-skill; })
           (import ./home/claude.nix { inherit llm-agents; })
           (import ./home/codex.nix { inherit llm-agents; })
@@ -138,7 +149,7 @@
       lib.mkReviewDeploy = args: import ./pkgs/review-deploy args;
 
       overlays.default = final: _prev: {
-        paste-cli = final.callPackage ./pkgs/paste-cli.nix { };
+        paste-cli = paste.packages.${final.stdenv.hostPlatform.system}.cli;
         input-indicator = final.callPackage ./pkgs/input-indicator.nix { };
         inherit (device-ca.overlays.default final _prev) cert-request;
       };
