@@ -97,6 +97,10 @@ in
         wantedBy = [ "multi-user.target" ];
         serviceConfig = {
           Type = "oneshot";
+          # A oneshot unit has no start timeout by default, and multi-user.target waits for this one, so a hung
+          # request would hold up every nixos switch (and boot) indefinitely. cert-request times out its requests
+          # itself; this is the bound if anything else hangs. Same for the units below.
+          TimeoutStartSec = "5min";
           ExecStart = "${cert-request}/bin/cert-request --ca-work-directory ${cfg.directory}/ca update-ca";
           ExecStartPost = pkgs.writeShellScript "local-pki-install-ca" ''
             set -euo pipefail
@@ -129,6 +133,7 @@ in
               serviceConfig = {
                 Type = "oneshot";
                 RemainAfterExit = true;
+                TimeoutStartSec = "5min";
                 ExecStart = "${cert-request}/bin/cert-request --ca-work-directory ${cfg.directory}/ca enroll --cert-directory ${cfg.directory}/${cert.cn} --cn ${lib.escapeShellArg cert.cn} --group ${lib.escapeShellArg cert.group}";
               };
             };
@@ -149,6 +154,7 @@ in
               ];
               serviceConfig = {
                 Type = "oneshot";
+                TimeoutStartSec = "5min";
                 ExecStart = [
                   "${cert-request}/bin/cert-request --ca-work-directory ${cfg.directory}/ca renew --cert-directory ${cfg.directory}/${cert.cn} --cn ${lib.escapeShellArg cert.cn} --group ${lib.escapeShellArg cert.group}"
                 ]
