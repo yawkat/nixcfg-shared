@@ -95,12 +95,21 @@ in
         after = [ "network-online.target" ];
         wants = [ "network-online.target" ];
         wantedBy = [ "multi-user.target" ];
+        # Retries, but not forever when the CA stays unreachable
+        startLimitIntervalSec = 3600;
+        startLimitBurst = 10;
         serviceConfig = {
           Type = "oneshot";
           # A oneshot unit has no start timeout by default, and multi-user.target waits for this one, so a hung
           # request would hold up every nixos switch (and boot) indefinitely. cert-request times out its requests
           # itself; this is the bound if anything else hangs. Same for the units below.
           TimeoutStartSec = "5min";
+          # It runs only daily, so a failure would otherwise stay until the next day. A nixos switch can start it right
+          # as it restarts the network or the local DNS resolver (network-online.target stays up meanwhile), and a host
+          # may not be online yet after a boot. While it waits for the retry the unit is activating, not failed, so the
+          # switch doesn't report it.
+          Restart = "on-failure";
+          RestartSec = "2min";
           ExecStart = "${cert-request}/bin/cert-request --ca-work-directory ${cfg.directory}/ca update-ca";
           ExecStartPost = pkgs.writeShellScript "local-pki-install-ca" ''
             set -euo pipefail
