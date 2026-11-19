@@ -30,9 +30,17 @@ jobs:
           # Empty on scheduled runs; the script's default applies then.
           COOLDOWN_DAYS: ${{ inputs.cooldown_days }}
         run: |
+          # Exit 2: some add-on couldn't be checked; the others were still
+          # updated. Open the PR anyway and fail the run at the end.
+          status=0
           python3 .github/scripts/update-firefox-addons.py \
             ${COOLDOWN_DAYS:+--cooldown-days "$COOLDOWN_DAYS"} \
-            --summary "$RUNNER_TEMP/summary.md"
+            --summary "$RUNNER_TEMP/summary.md" || status=$?
+          if [ "$status" -eq 2 ]; then
+            echo 'failed=true' >> "$GITHUB_OUTPUT"
+          elif [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
           {
             echo 'body<<EOF_SUMMARY'
             cat "$RUNNER_TEMP/summary.md"
@@ -44,3 +52,7 @@ jobs:
           delete-branch: true
           title: Update Firefox add-ons
           body: ${{ steps.update.outputs.body }}
+      - if: steps.update.outputs.failed == 'true'
+        run: |
+          echo '::error::Some Firefox add-ons could not be checked; see the PR body or the log above.'
+          exit 1
