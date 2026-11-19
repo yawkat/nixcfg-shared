@@ -35,19 +35,19 @@ let
 
   ublockOrigin = firefoxAddon {
     pname = "ublock-origin";
-    version = "1.74.0";
+    version = "1.76.4";
     addonId = "uBlock0@raymondhill.net";
-    url = "https://addons.mozilla.org/firefox/downloads/file/4981431/ublock_origin-1.74.0.xpi";
-    hash = "sha256-F1dW10RoybpFhj9/wzPTvmcPgtWwZjFOkVgU3VR9FlI=";
+    url = "https://addons.mozilla.org/firefox/downloads/file/5257481/ublock_origin-1.76.4.xpi";
+    hash = "sha256-ZtDj8hzjsysbwKk5m5PLLJqlmO8YgF2SEYx29m4mbB4=";
     license = pkgs.lib.licenses.gpl3Only;
   };
 
   tabReloader = firefoxAddon {
     pname = "tab-reloader";
-    version = "0.6.8";
+    version = "0.7.0";
     addonId = "jid0-bnmfwWw2w2w4e4edvcdDbnMhdVg@jetpack";
-    url = "https://addons.mozilla.org/firefox/downloads/file/4805316/tab_reloader-0.6.8.xpi";
-    hash = "sha256-0DP1xSfQUNFCTeoogi0RsiPBuQO5x8ECCftevb9qWCk=";
+    url = "https://addons.mozilla.org/firefox/downloads/file/5168257/tab_reloader-0.7.0.xpi";
+    hash = "sha256-Kov42Lp4gYXnkohmgmbpHq9gsNJGM77Mm3pJWiEIUPc=";
     license = pkgs.lib.licenses.mpl20;
   };
 
