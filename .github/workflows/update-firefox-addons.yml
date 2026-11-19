@@ -1,0 +1,58 @@
+name: Update Firefox add-ons
+
+on:
+  workflow_dispatch:
+    inputs:
+      cooldown_days:
+        description: >-
+          Only take add-on releases at least this many days old
+          (0 for an urgent update).
+        type: number
+        default: 5
+  schedule:
+    # Off the full hour, like update-flake.yml, and a little after it so the
+    # two PRs don't race for the runner.
+    - cron: '47 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - id: update
+        env:
+          # Empty on scheduled runs; the script's default applies then.
+          COOLDOWN_DAYS: ${{ inputs.cooldown_days }}
+        run: |
+          # Exit 2: some add-on couldn't be checked; the others were still
+          # updated. Open the PR anyway and fail the run at the end.
+          status=0
+          python3 .github/scripts/update-firefox-addons.py \
+            ${COOLDOWN_DAYS:+--cooldown-days "$COOLDOWN_DAYS"} \
+            --summary "$RUNNER_TEMP/summary.md" || status=$?
+          if [ "$status" -eq 2 ]; then
+            echo 'failed=true' >> "$GITHUB_OUTPUT"
+          elif [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          {
+            echo 'body<<EOF_SUMMARY'
+            cat "$RUNNER_TEMP/summary.md"
+            echo 'EOF_SUMMARY'
+          } >> "$GITHUB_OUTPUT"
+      - uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8
+        with:
+          branch: update_firefox_addons_action
+          delete-branch: true
+          title: Update Firefox add-ons
+          body: ${{ steps.update.outputs.body }}
+      - if: steps.update.outputs.failed == 'true'
+        run: |
+          echo '::error::Some Firefox add-ons could not be checked; see the PR body or the log above.'
+          exit 1
