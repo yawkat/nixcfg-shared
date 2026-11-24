@@ -2,7 +2,9 @@
   description = "yawkat's shared Home Manager configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    # TODO: switch to nixos-26.11 once that channel has its first release;
+    # until then only the -small channel exists.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.11-small";
     # Not used here. Consumers follow it for the odd package they need newer
     # than the stable release, so it goes through the cooldown of this
     # repository's flake update. Unlike the stable nixpkgs, it is not exempt:
@@ -10,7 +12,8 @@
     # security fixes are less urgent.
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/release-26.05";
+      # TODO: switch to release-26.11 once home-manager branches it off.
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     plasma-manager = {
