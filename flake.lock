@@ -57,11 +57,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795111595,
-        "narHash": "sha256-eXCWimvbjEeQkckD4BtnrErRmmF7yi9arweDa+q8sTc=",
+        "lastModified": 1795608233,
+        "narHash": "sha256-MO+PF5XHzZLujegGmiCVFzifD65I10yQ8ju4FR639JA=",
         "owner": "yawkat",
         "repo": "device-ca",
-        "rev": "3d7c54f20c0027aae2d6be9138894587e6b34f1a",
+        "rev": "d9176590f3839cd3a41d42b826f654a07e9aed31",
         "type": "github"
       },
       "original": {
