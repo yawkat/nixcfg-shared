@@ -20,13 +20,10 @@ in
       enable = true;
       package = agentPkgs.claude-code;
       skills = config.host.agentSkills;
-      # Concurrent builds each evaluate in their own client and share one
-      # daemon, which is how this machine has run out of memory before.
-      context = ''
-        Never run multiple `nix build`, `nix flake check`, `nixos-rebuild` or
-        similar Nix build/eval commands concurrently, including as parallel
-        background tasks or in parallel subagents. Run them one at a time.
-      '';
+      # Shared with Codex (home/codex.nix). Concurrent builds each evaluate in
+      # their own client and share one daemon, which is how a machine has run
+      # out of memory before.
+      context = ./agent-context.md;
     };
 
     home.packages = [ agentPkgs.claude-desktop ];
