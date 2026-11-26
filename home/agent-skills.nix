@@ -17,5 +17,8 @@
 
   config.host.agentSkills = {
     security-audit = "${security-audit-skill}/skills/security-audit";
+    # Local skills layered on security-audit and the agents' own code review.
+    security-audit-diverse = ./skills/security-audit-diverse;
+    combined-review = ./skills/combined-review;
   };
 }

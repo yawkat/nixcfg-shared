@@ -85,10 +85,16 @@ user namespaces that don't map root, such as sandboxed tools.
 - `host.agentSkills` is the skill list shared by the coding agents (`name` →
   directory with a `SKILL.md`). Enabled Claude and Codex setups receive it
   automatically through their Home Manager `skills` options. Entries defined
-  in the consuming configuration are added to the shared ones. Skills are pinned
-  flake inputs, so `nix flake update <input>` bumps them. Shared skills:
+  in the consuming configuration are added to the shared ones. External skills
+  are pinned flake inputs, so `nix flake update <input>` bumps them; local ones
+  live in `home/skills/`. Shared skills:
   - `security-audit`, from
     [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill).
+  - `security-audit-diverse` (local): a `deep` security-audit run where every
+    hunter assignment runs on two different strong models and the results are
+    merged.
+  - `combined-review` (local): the agent's own code review at its maximum local
+    setting and `security-audit-diverse`, run in parallel subagents.
 
 The shared NixOS modules enable the llm-agents binary cache when any Home
 Manager user enables Claude or Codex. Standalone Home Manager consumers manage
