@@ -42,6 +42,15 @@ Every hunter assignment the `security-audit` workflow would launch becomes one h
 - Hunters of the same assignment are independent. Do not show one model's result to another.
 - Do not tell a hunter that other models are hunting the same unit, and do not tell it which model it is.
 
+## NixOS hosts
+
+On NixOS (`/etc/NIXOS` exists), most compilers, interpreters, test runners, and sandboxing tools are not on `PATH`. A missing tool is not a reason to skip a local check and fall back to source-only reasoning. Copy this section into every reconnaissance, hunter, and verifier prompt.
+
+- **Getting tools**: get them from nixpkgs, for example `nix shell nixpkgs#python3 nixpkgs#gcc -c <command>`, or build a package once and put its `bin/` on `PATH`: `nix build nixpkgs#<pkg> --no-link --print-out-paths`. These come from the binary cache, not from the target, so they count as tools already available locally under the `security-audit` rule against installing dependencies. Do not use the target's own `flake.nix`, `shell.nix`, or dev shell outside the sandbox: evaluating it and its shell hooks run target-controlled code.
+- **Sandboxing**: the controls `security-audit` requires are available the same way: `nixpkgs#bubblewrap` (`bwrap --unshare-all` for no network, read-only binds for target and toolchain, a writable bind for `scratch/` only, `--clearenv`), plus `prlimit` or `systemd-run --user --scope -p MemoryMax=... -p CPUQuota=... -p TasksMax=...` for resource limits. Bind the needed `/nix/store` paths read-only into the sandbox.
+- **One Nix command at a time**: the host cannot run several Nix builds or evaluations at once. The parent creates an empty lock file at `<output-dir>/nix.lock` before launching agents (or uses the one it was given, for example by `combined-review`), and every agent wraps every `nix` command in `flock <output-dir>/nix.lock nix ...`. Agents only open this file to lock it; it is not a shared run file. Prefer fetching the tools a wave obviously needs in the parent before launching it, and pass the store paths in the prompts.
+- If a tool really cannot be obtained, record the exact blocker on the check, as `security-audit` requires; do not silently skip the test.
+
 ## Merging hunter results
 
 Merge the parallel results of one assignment into one ledger update per unit before running the coverage critic. Coverage critics and later waves see only the merged ledger.
