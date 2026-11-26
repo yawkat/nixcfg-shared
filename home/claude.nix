@@ -20,7 +20,10 @@ in
       enable = true;
       package = agentPkgs.claude-code;
       skills = config.host.agentSkills;
-      context = config.host.agentContext;
+      # Shared with Codex (home/codex.nix). Concurrent builds each evaluate in
+      # their own client and share one daemon, which is how a machine has run
+      # out of memory before.
+      context = ./agent-context.md;
     };
 
     home.packages = [ agentPkgs.claude-desktop ];

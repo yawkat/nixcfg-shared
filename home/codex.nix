@@ -14,7 +14,8 @@
     programs.codex = {
       enable = true;
       skills = config.host.agentSkills;
-      context = config.host.agentContext;
+      # Shared with Claude Code, see home/claude.nix.
+      context = ./agent-context.md;
     };
 
     home.packages = [ llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.chatgpt ];
