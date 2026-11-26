@@ -29,11 +29,7 @@ Tell each subagent that it is one of two parallel reviews, that it must not edit
 
 ### Hosts with Nix
 
-When `nix` is on `PATH` (NixOS, or any system with Nix installed, such as one managed by system-manager or Home Manager), get missing tools through Nix. On NixOS especially, most build tools, interpreters, and test runners are not on `PATH` otherwise. Tell both subagents, and have them tell every agent they start:
-
-- A missing tool is not a reason to skip running or testing something. Get it from nixpkgs, for example `nix shell nixpkgs#python3 nixpkgs#gcc -c <command>`, or the project's own dev shell (`nix develop -c <command>`) when the project has one and running its code is acceptable for that review. The security audit has stricter rules for this; `security-audit-diverse` covers them.
-- The host cannot run several Nix builds or evaluations at once, and these reviews run many agents in parallel. Create an empty lock file in a scratch directory outside the target before launching, pass its path to both subagents, and have every agent wrap every `nix` command in `flock <lock file> nix ...`. The security audit uses this lock file instead of creating its own.
-- If a tool really cannot be obtained, say exactly what was not tested and why.
+When `nix` is on `PATH`, agents get missing tools through it, as the global agent instructions say, and must not skip running or testing something because a tool is missing. On top of that, these reviews run many agents in parallel while the host can run only one Nix command at a time. Create an empty lock file in a scratch directory outside the target before launching, pass its path to both subagents, and have every agent they start wrap every `nix` command in `flock <lock file> nix ...`. The security audit uses this lock file instead of creating its own, and adds its own stricter rules for where tools may come from.
 
 ### Code review subagent
 

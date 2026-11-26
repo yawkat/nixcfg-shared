@@ -95,6 +95,10 @@ user namespaces that don't map root, such as sandboxed tools.
     merged.
   - `combined-review` (local): the agent's own code review at its maximum local
     setting and `security-audit-diverse`, run in parallel subagents.
+- `host.agentContext` is the shared global instructions for the coding agents
+  (Claude's `CLAUDE.md`, Codex's `AGENTS.md`): run Nix commands one at a time,
+  and get missing tools from nixpkgs instead of skipping tests. Definitions in
+  the consuming configuration are appended.
 
 The shared NixOS modules enable the llm-agents binary cache when any Home
 Manager user enables Claude or Codex. Standalone Home Manager consumers manage
